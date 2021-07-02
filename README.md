@@ -16,6 +16,24 @@ This repo contains all the code and documentation for the SASCRiP package
 
 ## SASCRiP functions - User guide
 
+### Edit_10xv1_fastq
+
+### run_fastqc
+
+### check_ercc
+
+### kallisto_bustools_count
+
+### include_ERCC_bus_count
+
+### run_cqc
+
+### stransform_normalize
+
+### sctransform_cell_cycle
+
+### sascrip-preprocess
+
 
 ## Authors
 
