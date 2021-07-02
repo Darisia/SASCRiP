@@ -6,3 +6,24 @@ This repo contains all the code and documentation for the SASCRiP package
 
 
 ### Overview
+
+
+### Installation
+
+
+### SASCRiP's workflow
+
+
+### SASCRiP functions - User guide
+
+
+### Authors
+
+
+### Licence
+
+
+### Reference
+
+
+### Read next
