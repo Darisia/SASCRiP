@@ -2,7 +2,7 @@
 This repo contains all the code and documentation for the SASCRiP package
 
 ### Table of Contents
-1. <https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#overview#<overview>
+1. <https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#overview>
 
 
 ### Overview
