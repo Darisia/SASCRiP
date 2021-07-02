@@ -1,29 +1,29 @@
 # SASCRiP_draft_repo
 This repo contains all the code and documentation for the SASCRiP package
 
-### Table of Contents
+## Table of Contents
 1. [Overview](https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#overview)
 
 
-### Overview
+## Overview
 
 
-### Installation
+## Installation
 
 
-### SASCRiP's workflow
+## SASCRiP's workflow
 
 
-### SASCRiP functions - User guide
+## SASCRiP functions - User guide
 
 
-### Authors
+## Authors
 
 
-### Licence
+## Licence
 
 
-### Reference
+## Reference
 
 
-### Read next
+## Read next
