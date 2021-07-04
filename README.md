@@ -8,7 +8,7 @@ This repo contains all the code and documentation for the SASCRiP package
 4. <details>
      <summary><a href="https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#sascrip-functions---user-guide">SASCRiP functions - User guide</a></summary>
      <br>
-     [Edit_10v1_fastq](https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#edit_10xv1_fastq)
+     <a href="https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#edit_10xv1_fastq">Edit_10v1_fastq</a>
      </details>
 5. [SASCRiP functions - User guide](https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#sascrip-functions---user-guide)
 
