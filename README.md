@@ -334,7 +334,78 @@ output_directory (str):            Path to the output directory where the new ma
 
 ## run_cqc
 
-This is the main cell quality control function. run_cqc 
+This is the main cell quality control function. run_cqc runs Seurat functions on the input Seurat-compatible mtx matrix and performs cell quality control through the use of filtering thresholds. Multiple parameters are included within this function to allow for many different types of inputs and outputs for integration with many other single-cell analysis tools
+
+#### Usage
+
+````python
+import sascrip
+from sascrip import sascrip_functions
+
+sascrip_functions.run_cqc(
+     input_file_or_folder,
+     sample_ID,
+     output_directory = "working_directory,
+     generate_seurat_object = True,
+     subset_seurat_object = True,
+     generate_default_plots = True,
+     input_seurat_object = False,
+     ENSG_gname38_path = "working_directory",
+     gene_lower = 200,
+     gene_higher_method = "MAD",
+     gene_higher = "to_be_calculated",
+     mitochondria_percent = 10,
+     nMADs = 6,
+     nSD = 6,
+     extract_cell_metrics = False,
+     output_matrix = False
+)
+
+````
+#### Parameters
+
+````
+Required parameters
+___________________
+
+input_file_or_folder (str):        Path to the folder containing the Seurat-compatible matrices or path to the hdf5 file. Additionally, saved seurat objects in rds or rdata format can be input here. If a Seurat object is input, the input_seurat_object parameter must be set to True
+
+sample_ID (str):                   The name of the sample
+
+
+
+Optional parameters
+___________________
+
+output_directory (str):             The path to the output directory where all output files and directories will be created and saved
+
+generate_seurat_object (bool):      Indicate whether a seurat object should be generated from the input mtx matrix. If a Seurat object is input in the input_file_or_folder parameter, this parameter is required to be set to False. If a gene count matrix is input, this parameters is required to be set to True.
+
+subset_seurat_object (bool):        Indicate
+
+
+
+species_gtf (str):                 Path to the GTF file for the species of interest. This will be used to create the transcripts-to-genes mapping file. If generate_index is set to True, this parameter is required.
+
+k_mer_length (int):                The length of the K-mers that should be generated when creating the Kallisto index
+
+intron (bool):                     Indicate whether or not to include intron transcript ids
+
+filter (bool):                     Indicate whether or not to filter the BUS file prior to generating the gene-count matrix in mtx format
+
+UMI_bp (str):                      The number of base pairs sequenced for the UMI sequence. If 10xv1 technology is used, this parameter is required
+
+barcode_bp (str):                  The number of base pairs sequenced for the barcode sequence. If 10xv1 technology is used, this parameter is required
+
+transcript_bp (str):               The number of base pairs sequenced for the transcript sequence
+
+whitelist_path (str):              Path to the barcode whitelist that will be used for barcode correction 
+
+path_to_prefix_count_files (str):  Prefix of the output matrix files and indices
+
+memory (str):                      Amount of memory to use 
+
+```` 
 
 ## stransform_normalize
 
