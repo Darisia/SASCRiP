@@ -33,7 +33,9 @@ edit_10xv1_fastq prepares FastQ files, obtained using the 10xv1 sequencing chemi
 ````python
 import sascrip
 from sascrip import sascrip_functions
+
 sascrip_functions.edit_10xv1_fastq(input_directory, output_directory)
+
 ````
 #### Parameters
 
@@ -49,7 +51,7 @@ output-directory (str): Path to the output directory where the new separated Fas
 
 ## check_ercc
 
-check_ercc allows the user to check if the single-cell dataset may contain RNA spike-ins that can be used as an additional cell-quality control metric. If check_ercc is run True or False, depending on whether ERCCs are included or not, will be returned as standard output 
+check_ercc allows the user to check if the single-cell dataset may contain RNA spike-ins that can be used as an additional cell-quality control metric. If check_ercc is run, True or False - depending on whether ERCCs are included or not, will be returned as standard output 
 
 #### Usage
 
@@ -57,7 +59,15 @@ check_ercc allows the user to check if the single-cell dataset may contain RNA s
 import sascrip
 from sascrip import sascrip_functions
 
-sascrip_functions.check_ercc(ERCC_fasta, output_directory, list_of_fastqs, single_cell_technology, UMI_bp = '0', barcode_bp = '0', transcript_bp = '0')
+sascrip_functions.check_ercc(
+     ERCC_fasta,
+     output_directory,
+     list_of_fastqs,
+     single_cell_technology,
+     UMI_bp = '0',
+     barcode_bp = '0',
+     transcript_bp = '0'
+)
 
 ````
 #### Parameters
@@ -66,36 +76,59 @@ sascrip_functions.check_ercc(ERCC_fasta, output_directory, list_of_fastqs, singl
 Required parameters
 ___________________
 
-ERCC_fasta (str): Path to the ERCC FASTA file
+ERCC_fasta (str):             Path to the ERCC FASTA file
 
-output_directory (str): Path to the output directory where output files will be saved
+output_directory (str):       Path to the output directory where output files will be saved
 
-list_of_fastqs (str-list): Python list of the paths to input FastQ files in the *order specified by Kallisto
+list_of_fastqs (str-list):    Python list of the paths to input FastQ files in the *order specified by Kallisto
 
 single_cell_technology (str): The single-cell sequencing technology that was used as *specified by Kallisto. If 10xv1 technology was used, the UMI_bp and barcode_bp parameters are required
 
 Optional parameters
 ___________________
 
-UMI_bp (str): The number of base pairs sequenced for the UMI sequence. If 10xv1 technology is used, this parameter is required
+UMI_bp (str):                 The number of base pairs sequenced for the UMI sequence. If 10xv1 technology is used, this parameter is required
 
-barcode_bp (str): The number of base pairs sequenced for the barcode sequence. If 10xv1 technology is used, this parameter is required
+barcode_bp (str):             The number of base pairs sequenced for the barcode sequence. If 10xv1 technology is used, this parameter is required
 
-transcript_bp (str): The number of base pairs sequenced for the transcript sequence
+transcript_bp (str):          The number of base pairs sequenced for the transcript sequence
 
 ```` 
 
-### kallisto_bustools_count
+* **Kallisto specified FastQ file order and single-cell technologies**
 
-### include_ERCC_bus_count
+| Single-cell tech |     FastQ file order     |
+| ---------------- | ------------------------ |
+| 10xv1            | Transcript, UMI, barcode |
+| 10xv2            | barcode-UMI, Transcript  |
+| 10xv3            | barcode-UMI, Transcript  |
+| CELSeq           | barcode-UMI, Transcript  |
+| CELSeq2          | barcode-UMI, Transcript  |
+| DropSeq          | barcode-UMI, Transcript  |
+| inDrops          | barcode-UMI, Transcript  |
+| SCRBSeq          | barcode-UMI, Transcript  |
+| SureCell         | barcode-UMI, Transcript  |
 
-### run_cqc
+* **Working with more than one set of fastq files**
 
-### stransform_normalize
+Include the additional sets in the fastq list, keeping the sets together. For example: if you have 2 sets of fastq files from the 10xv2 chemistry
+```python
 
-### sctransform_cell_cycle
+list_of_fastqs = ["barcode-UMI_R1_1.fastq.gz", "Transcript_R2_1.fastq.gz", "barcode_UMI_R1_2.fastq.gz", "Transcript_R2_2.fastq.gz"]
 
-### sascrip-preprocess
+```
+
+## kallisto_bustools_count
+
+## include_ERCC_bus_count
+
+## run_cqc
+
+## stransform_normalize
+
+## sctransform_cell_cycle
+
+## sascrip-preprocess
 
 
 ## Authors
