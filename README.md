@@ -120,6 +120,81 @@ list_of_fastqs = ["barcode-UMI_R1_1.fastq.gz", "Transcript_R2_1.fastq.gz", "barc
 
 ## kallisto_bustools_count
 
+Runs both Kallisto and Bustools through kb-python to perform pseudoalignment and gene quantification respectively. kallisto_bustools_count generates unfiltered and filtered count matrices for the single-cell dataset of interest
+
+#### Usage
+
+````python
+import sascrip
+from sascrip import sascrip_functions
+
+sascrip_functions.kallisto_bustools_count(
+     list_of_fastqs,
+     single_cell_technology,
+     all_out_path,
+     generate_index = False,
+     species_index = None,
+     species_t2g = None,
+     species_fasta = None,
+     species_gtf = None,
+     k_mer_length,
+     intron = None,
+     filter = True,
+     UMI_bp = '0',
+     barcode_bp = '0',
+     transcript_bp = '0',
+     whitelist_path = None,
+     path_to_prefix_count_files = 'unfiltered_counts',
+     memory = '4G'
+)
+
+````
+#### Parameters
+
+````
+Required parameters
+___________________
+
+list_of_fastqs (str-list):         Python list of the paths to input FastQ files in the *order specified by Kallisto
+
+single_cell_technology (str):      The single-cell sequencing technology that was used as *specified by Kallisto. If 10xv1 technology was used, the UMI_bp and barcode_bp parameters are required
+
+all_out_path (str):                Path to the main output directory where all files and new directories will be created and saved
+
+
+Optional parameters
+___________________
+
+generate_index (bool):             Indicate whether the Kallisto Index should be generated within the function. If set to True: the species_fasta and the species_gtf are required
+
+species_index (str):               Path to the kallisto_index for the species of interest. If no index is given, the default Kallisto index created using the GRCh 38 transcriptome assembly will be used.
+
+species_t2g (str):                 Path to the transcript-to-genes mapping file for the species of interest. If no mapping file is given, the default file created using the GRCh 38 GTF file will be used.
+
+species_fasta (str):               Path to the transcriptome (cDNA) FASTA file for the species of interest. This will be used to generate the Kallisto index. If generate_index is set to True, this parameter is required.
+
+species_gtf (str):                 Path to the GTF file for the species of interest. This will be used to create the transcripts-to-genes mapping file. If generate_index is set to True, this parameter is required.
+
+k_mer_length (int):                The length of the K-mers that should be generated when creating the Kallisto index
+
+intron (bool):                     Indicate whether or not to include intron transcript ids
+
+filter (bool):                     Indicate whether or not to filter the BUS file prior to generating the gene-count matrix in mtx format
+
+UMI_bp (str):                      The number of base pairs sequenced for the UMI sequence. If 10xv1 technology is used, this parameter is required
+
+barcode_bp (str):                  The number of base pairs sequenced for the barcode sequence. If 10xv1 technology is used, this parameter is required
+
+transcript_bp (str):               The number of base pairs sequenced for the transcript sequence
+
+whitelist_path (str):              Path to the barcode whitelist that will be used for barcode correction 
+
+path_to_prefix_count_files (str):  Prefix of the output matrix files and indices
+
+memory (str):                      Amount of memory to use 
+
+```` 
+
 ## include_ERCC_bus_count
 
 ## run_cqc
