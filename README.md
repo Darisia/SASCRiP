@@ -205,7 +205,7 @@ Please see description above
 
 ## include_ERCC_bus_count
 
-include_ERCC_bus_count first checks if ERCC spike-ins are included in the dataset and generates counts with kallisto_bustools_count accordingly
+include_ERCC_bus_count first checks if ERCC spike-ins are included in the dataset and generates counts with kallisto_bustools_count accordingly. To check if spike-ins are present, a Kallisto index is generated from the ERCC FASTA and the FastQ sequences from the dataset are aligned to the ERCC index. if no sequences align to the ERCC index, the gene-count matrix will be generated without including ERCC sequences. However, if there are seqeunces that align to the ERCC index, the ERCC FASTA seqeunce and the species FASTA sequence will be combined to create a new kallisto index. Therefore, the final gene-count matrix will include ERCC sequences.
 
 #### Usage
 
@@ -285,7 +285,56 @@ memory (str):                      Amount of memory to use
 
 ```` 
 
+* **Kallisto specified FastQ file order and single-cell technologies**
+
+Please see table above
+
+* **Working with more than one set of fastq files**
+
+Please see description above
+
+## seurat_matrix
+
+This SASCRiP function is designed to convert the output mtx matrix from kallisto_bustools_count or include_ERCC_bus_count to a gene-count matrix that is supported by Seurat. To do this, seurat_matrix transposes the bustools matrix so that genes and cells are represented in rows and columns respectively. Additionally, the ENSG gene names are converted to the corresponding HGNC gene symbols using the transcript-to-genes mapping file. Finally, all three files (mtx matrix, gene index file, and barcode index file) are renamed and compressed. 
+
+#### Usage
+
+````python
+import sascrip
+from sascrip import sascrip_functions
+
+sascrip_functions.seurat_matrix(
+     bustools_mtx_matrix,
+     bustools_gene_index,
+     bustools_barcode_index,
+     transcript_to_genes_file,
+     output_directory
+)
+
+````
+#### Parameters
+
+````
+Required parameters
+___________________
+
+bustools_mtx_matrix (str):         Path to the BUStools mtx matrix file
+
+bustools_gene_index (str):         Path to the output BUStools gene index file
+
+bustools_barcode_index (str):      Path to the BUStools barcode index file
+
+transcript_to_genes_file (str):    Path to the transcript-to-genes mapping file used/created with kallisto_bustools_count or include_ERCC_bus_count
+
+output_directory (str):            Path to the output directory where the new matrix files will be saved
+
+```` 
+
+
+
 ## run_cqc
+
+This is the main cell quality control function. run_cqc 
 
 ## stransform_normalize
 
