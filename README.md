@@ -4,8 +4,7 @@ This repo contains all the code and documentation for the SASCRiP package
 ## Table of Contents
 1. [Overview](https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#overview)
 2. [Installation](https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#installation)
-3. [SASCRiP's workflow](https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#sascrips-workflow)
-4. <details>
+3. <details>
      <summary><a href="https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#sascrip-functions---user-guide">SASCRiP functions - User guide</a></summary>
      <br>
      <a href="https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#edit_10xv1_fastq">Edit_10v1_fastq</a>
@@ -17,15 +16,32 @@ This repo contains all the code and documentation for the SASCRiP package
 
 ## Installation
 
+### Requirements
 
-## SASCRiP's workflow
+SASCRiP uses multiple single-cell analysis packages such as Seurat and kb-python. Since SASCRiP makes use of the R packages such as Seurat and Tidyverse for plotting, these packages are required. A full list of the requirements is shown below
 
+1. Python (>v3.7) is required to run SASCRiP functions
+2. R (>v3.6) is required to be installed 
+3. Seurat R package (can be installed through SASCRiP)
+4. Tidyverse R package (can be installed through SASCRiP)
+5. kb-python (can be installed when SASCRiP is installed)
+
+### Installation code
+
+The SASCRiP package can be installed using pip from the terminal
+
+```bash
+
+pip install sascrip
+
+```
 
 ## SASCRiP functions - User guide
 
-### run_fastqc
+## install_R_packages
 
 ## edit_10xv1_fastq
+
 edit_10xv1_fastq prepares FastQ files, obtained using the 10xv1 sequencing chemistry, for input into Kallisto for pseudoalignment and quantification. The directory containing the FastQ files are input into edit_10xv1_fastq which searches for the RA FastQ file that contains both the UMI and transcript sequence. The UMI and Transcript sequences are separated into their own FastQ files. The directory containing all these FastQ files can be input into kallisto_bustools_count for further processing
 
 #### Usage
@@ -381,35 +397,98 @@ output_directory (str):             The path to the output directory where all o
 
 generate_seurat_object (bool):      Indicate whether a seurat object should be generated from the input mtx matrix. If a Seurat object is input in the input_file_or_folder parameter, this parameter is required to be set to False. If a gene count matrix is input, this parameters is required to be set to True.
 
-subset_seurat_object (bool):        Indicate
+subset_seurat_object (bool):        Indicate whether the Seurat object should be subset, removing low-quality cells identified by given thresholds
 
+generate_default_plots (bool):      Indicate whether deafault plots should be generated to visualise the single-cell data and identified low-quality cells
 
+input_seurat_object (bool):         Indicate whether the input_file_or_folder parameter contains the path to a saved Seurat object. If so, this parameter should be set to True
 
-species_gtf (str):                 Path to the GTF file for the species of interest. This will be used to create the transcripts-to-genes mapping file. If generate_index is set to True, this parameter is required.
+ENSG_gname38_path (str):            Path to the file that will allow us to convert ENSG gene names to HGNC gene symbols (within the seurat object) if required
 
-k_mer_length (int):                The length of the K-mers that should be generated when creating the Kallisto index
+gene_lower (int/None):              Minimum number of genes that should be detected in healthy cells. If this cell metric should not be used to identify low-quality cells then gene_lower should be set to None. However, if this parameter is set to None and generate_default_plots is set to True, a warning will be returned as the visualisations that use this threshold cannot be generated.
 
-intron (bool):                     Indicate whether or not to include intron transcript ids
+gene_higher_method (str):           One of three methods - "MAD" (Median Absolute Deviation), "SD" (Standard Deviation), or "Manual" - that should be used to identify outliers using total gene count per cell. If Manual is selected, a value must be given for the gene_higher parameter
 
-filter (bool):                     Indicate whether or not to filter the BUS file prior to generating the gene-count matrix in mtx format
+gene_higher (int/None):             Maximum number of genes that should be detected in single cells. If the gene_higher_method is set to "Manual", a value for gene_higher must be given. If this cell metric should not be used to identify cell doublets then gene_higher should be set to None. However, if this parameter is set to None and generate_default_plots is set to True, a warning will be returned as the visualisations that use this threshold cannot be generated.
 
-UMI_bp (str):                      The number of base pairs sequenced for the UMI sequence. If 10xv1 technology is used, this parameter is required
+mitochondria_percent (int/None):   The maximum percentage of mitochondrial genes within a cell. If this cell metric should not be used to identify damaged cells then mitochondria_percent should be set to None. However, if this parameter is set to None and generate_default_plots is set to True, a warning will be returned as the visualisations that use this threshold cannot be generated
 
-barcode_bp (str):                  The number of base pairs sequenced for the barcode sequence. If 10xv1 technology is used, this parameter is required
+nMADs (int):                       If the "MAD" method is selected in gene_higher_method, the value given to nMADs is used as the threshold to classify cells as outliers
 
-transcript_bp (str):               The number of base pairs sequenced for the transcript sequence
+nSD (int):                         if the "SD" method is selected in gene_higher_method, the value given to nSD is used as the threshold to classify cells as outliers
 
-whitelist_path (str):              Path to the barcode whitelist that will be used for barcode correction 
+extract_cell_metrics (bool):       Indicate whether to extract the calculated cell metrics as a .tsv file
 
-path_to_prefix_count_files (str):  Prefix of the output matrix files and indices
-
-memory (str):                      Amount of memory to use 
+output_matrix (bool):              Indicate whether to generate an mtx matrix file from the filtered Seurat data. This matrix will contain all healthy single cells characterised by the given thresholds
 
 ```` 
 
 ## stransform_normalize
 
-## sctransform_cell_cycle
+sctransform_normalize takes the raw UMI counts from healthy single cells (stored within a seurat object) and generates gene expression values using sctransform through Seurat. A saved Seurat object containing log normalised expression values as well as corrected counts. Additionally, the top 2000 highly variable genes are returned. This information is required for downstream analysis such as clustering or data integration. 
+
+#### Usage
+
+````python
+import sascrip
+from sascrip import sascrip_functions
+
+sascrip_functions.sctransform_normalize(
+     seurat_object,
+     sample_ID,
+     output_directory = "working_directory,
+     output_log_matrix = False,
+     output_count_matrix = False,
+     ENSG_gname38_path = "working_directory",
+     **additional_sctransform_arguments
+)
+
+````
+#### Parameters
+
+````
+Required parameters
+-------------------
+
+seurat_object (str):               Path to the saved filtered Seurat object
+
+sample_ID (str):                   Name of sample
+
+
+Optional parameters
+--------------------
+
+output_directory (str):            Path to the output directory where all generated files and dircetories will be saved
+
+output_log_matrix (str):           Indicate whether to additionally store the gene expression values per cell in an mtx matrix
+
+output_count_matrix (str):         Indicate whether to additionally store the corrected UMI counts in an mtx matrix
+
+ENSG_gname38_path (str):           Path to the file that will allow the conversion of ENSG gene names to HGNC gene symbols (within the seurat object) if required
+
+**additional_sctransform_arguments (dict):  Additional parameters (with key words) that should be passed to Seurat's SCTransform function - which additionally passes the parameters to the original stransform::vst function. In order to use parameter - the additional parameters to be passed should be in the form of a python dictionary where the key word is the parameter name (str) and the value is the given parameter value (in it's correct data type) - *see example below
+
+```` 
+
+* Example when using additional_sctransform_arguments - To access the SCTransform parameter "conserve.memory" and set it to True:
+
+```python
+
+import sascrip
+from sascrip import sascrip_functions
+
+# Set up the dictionary for the additional parameters
+additional_parameters = {"conserve.memory": True} # Note: If the parameter requires a boolean type, please use Pythons boolean datatype (True/False)
+
+# Run sctransform_normalize with additional parameters
+sascrip_functions.sctransform_normalize(
+     seurat_object,
+     sample_ID,
+     **additional_parameters # Indicate the keyword dictionary using "**"
+)
+
+```
+
 
 ## sascrip-preprocess
 
