@@ -40,6 +40,18 @@ pip install sascrip
 
 ## install_R_packages
 
+This functions allows the user to install missing R packages that are required for SASCRiP to work. install_R_packages first checks if the package is installed and if not, install.packages() is run.
+
+#### Usage
+
+````python
+import sascrip
+from sascrip import sascrip_functions
+
+sascrip_functions.install_R_packages()
+
+````  
+
 ## edit_10xv1_fastq
 
 edit_10xv1_fastq prepares FastQ files, obtained using the 10xv1 sequencing chemistry, for input into Kallisto for pseudoalignment and quantification. The directory containing the FastQ files are input into edit_10xv1_fastq which searches for the RA FastQ file that contains both the UMI and transcript sequence. The UMI and Transcript sequences are separated into their own FastQ files. The directory containing all these FastQ files can be input into kallisto_bustools_count for further processing
