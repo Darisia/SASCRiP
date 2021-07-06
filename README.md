@@ -1,24 +1,24 @@
-# SASCRiP_draft_repo
+# SASCRiP Documentation
 This repo contains all the code and documentation for the SASCRiP package
 
 ## Table of Contents
-1. [Installation](https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#installation)
+1. [Installation](https://github.com/Darisia/SASCRiP/blob/main/README.md#installation)
 2. <details>
-     <summary><a href="https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#sascrip-functions---user-guide">SASCRiP functions - User guide</a></summary>
+     <summary><a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#sascrip-functions---user-guide">SASCRiP functions - User guide</a></summary>
      <br>
-     <a href="https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#edit_10xv1_fastq">edit_10v1_fastq</a>
+     <a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#edit_10xv1_fastq">edit_10v1_fastq</a>
      <br>
-     <a href="https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#check_ercc">check_ercc</a>
+     <a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#check_ercc">check_ercc</a>
      <br>
-     <a href="https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#kallisto_bustools_count">kallisto_bustools_count</a>
+     <a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#kallisto_bustools_count">kallisto_bustools_count</a>
      <br>
-     <a href="https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#include_ercc_bus_count">include_ERCC_bus_count</a>
+     <a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#include_ercc_bus_count">include_ERCC_bus_count</a>
      <br>
-     <a href="https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#run_cqc">run_cqc</a>
+     <a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#run_cqc">run_cqc</a>
      <br>
-     <a href="https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#stransform_normalize">sctransform_normalize</a>
+     <a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#stransform_normalize">sctransform_normalize</a>
      <br>
-     <a href="https://github.com/Darisia/SASCRiP_draft_repo/blob/main/README.md#sascrip-preprocess">sascrip_preprocess</a>
+     <a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#sascrip-preprocess">sascrip_preprocess</a>
      </details>
 3. Authors
 4. License
