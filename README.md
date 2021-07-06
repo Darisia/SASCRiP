@@ -4,7 +4,7 @@ This repository contains all the code and documentation for the SASCRiP Python p
 ## Table of Contents
 1. [Installation](https://github.com/Darisia/SASCRiP/blob/main/README.md#installation)
 2. <details>
-     <summary><a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#sascrip-functions---user-guide">SASCRiP functions - User guide</a></summary>
+     <summary><a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#sascrip-functions:-user-guide">SASCRiP functions: User guide</a></summary>
      <br>
      <a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#edit_10xv1_fastq">edit_10v1_fastq</a>
      <br>
@@ -20,10 +20,10 @@ This repository contains all the code and documentation for the SASCRiP Python p
      <br>
      <a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#sascrip-preprocess">sascrip_preprocess</a>
      </details>
-3. Authors
-4. License
-5. Reference
-6. Read next
+3. [Authors](https://github.com/Darisia/SASCRiP#authors)
+4. [License](https://github.com/Darisia/SASCRiP#license)
+5. [Reference](https://github.com/Darisia/SASCRiP#reference)
+6. [Read next](https://github.com/Darisia/SASCRiP#read-next)
 
 
 ## Installation
@@ -48,7 +48,7 @@ pip install sascrip
 
 ```
 
-## SASCRiP functions - User guide
+## SASCRiP functions: User guide
 
 ## install_R_packages
 
