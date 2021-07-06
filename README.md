@@ -1,5 +1,5 @@
 # SASCRiP Documentation
-This repo contains all the code and documentation for the SASCRiP package
+This repository contains all the code and documentation for the SASCRiP Python package
 
 ## Table of Contents
 1. [Installation](https://github.com/Darisia/SASCRiP/blob/main/README.md#installation)
