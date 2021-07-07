@@ -18,7 +18,7 @@ This repository contains all the code and documentation for the SASCRiP Python p
      <br>
      <a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#stransform_normalize">sctransform_normalize</a>
      <br>
-     <a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#sascrip-preprocess">sascrip_preprocess</a>
+     <a href="https://github.com/Darisia/SASCRiP/blob/main/README.md#sascrip_preprocess">sascrip_preprocess</a>
      </details>
 3. [Authors](https://github.com/Darisia/SASCRiP#authors)
 4. [License](https://github.com/Darisia/SASCRiP#license)
