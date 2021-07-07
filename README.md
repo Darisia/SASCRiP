@@ -514,18 +514,86 @@ sascrip_functions.sctransform_normalize(
 ```
 
 
-## sascrip-preprocess
+## sascrip_preprocess
 
+sascrip_preprocess allows the user to run the entire single-cell RNA sequencing data pre-processing steps with one function. The sascrip_preprocess parameters can be customised to adjust the default settings. 
+
+#### Usage
+
+````python
+import sascrip
+from sascrip import sascrip_functions
+
+sascrip_functions.sascrip_preprocess(
+     output_directory,
+     sample_ID,
+     list_of_fastqs,
+     single_cell_technology,
+     species_index,
+     species_t2g,
+     filter = True,
+     kallisto_bustools_count_parameters = None,
+     run_cqc_parameters = None,
+     additional_sctransform_arguments None
+)
+
+````
+#### Parameters
+
+````
+Required parameters
+___________________
+
+output_directory (str):                    Path to the output directory where output files will be saved
+
+sample_ID (str):                           Name of the sample
+
+list_of_fastqs (str-list):                 Python list of the paths to input FastQ files in the *order specified by Kallisto
+
+single_cell_technology (str):              The single-cell sequencing technology that was used as *specified by Kallisto. If 10xv1 technology was used, the UMI_bp and barcode_bp parameters are required
+
+species_index (str):                       Path to the kallisto_index for the species of interest. If no index is given (species_index = None), the default Kallisto index created using the GRCh 38 transcriptome assembly will be used. If the kallisto_index needs to be generated, set kallisto_index = None and create a keyword dictionary (as described for **additional_sctransform_arguments) for the following kallisto_bustools_count parameters; "generate_index", "species_fasta", "species_gtf". This dictionary should be created for kallisto_bustools_count_parameters. 
+
+species_t2g (str):                         Path to the transcript-to-genes mapping file for the species of interest. If no mapping file is given, the default file created using the GRCh 38 GTF file will be used. If the transcripts-to-genes mapping file needs to be generated, set species_t2g = None. The dictionary supplied to kallisto_bustools_count_parameters will allow the kallisto_bustools_count function to create both the kallisto index and the transcripts-to-genes mapping file         
+
+Optional parameters
+___________________
+
+filter (bool):                             Indicate whether to filter the BUS file prior to generating the count matrix
+
+include_checkpoints (bool):                Indicate whether to print all log statements to standard output
+
+kallisto_bustools_count_parameters (dict): Any additional parameters to be adjusted for the kallisto_bustools_count function in the same format as described above for **additional_sctransform_arguments
+
+run_cqc_parameters (dict):                 Any additional parameters to be adjusted for the run_cqc functions in the same format as described above for **additional_sctransform_arguments
+
+additional_sctransform_arguments (dict):   Additional parameters (with key words) that should be passed to Seurat's SCTransform function - which additionally passes the parameters to the original stransform::vst function. This dictionary should be created in the same format as previously described for this parameter
+
+```` 
+
+* **Kallisto specified FastQ file order and single-cell technologies**
+
+Please see table above
+
+* **Working with more than one set of fastq files**
+
+Please see description above
 
 ## Authors
 
 
 ## License
 
-[MIT](https://choosealicense.com/licenses/mit/)
+[GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
 
 
 ## Reference
 
 
 ## Read next
+
+#### [Seurat vignette: A guided clustering workflow](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) 
+
+#### [Kallisto documentation](https://pachterlab.github.io/kallisto/manual)
+
+#### [BUStools documentation](https://bustools.github.io/manual)
