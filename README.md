@@ -347,7 +347,6 @@ sascrip_functions.seurat_matrix(
      bustools_mtx_matrix,
      bustools_gene_index,
      bustools_barcode_index,
-     transcript_to_genes_file,
      output_directory
 )
 
@@ -363,8 +362,6 @@ bustools_mtx_matrix (str):         Path to the BUStools mtx matrix file
 bustools_gene_index (str):         Path to the output BUStools gene index file
 
 bustools_barcode_index (str):      Path to the BUStools barcode index file
-
-transcript_to_genes_file (str):    Path to the transcript-to-genes mapping file used/created with kallisto_bustools_count or include_ERCC_bus_count
 
 output_directory (str):            Path to the output directory where the new matrix files will be saved
 
@@ -580,6 +577,14 @@ Please see table above
 Please see description above
 
 ## Authors
+
+#### Darisia Moonsamy
+email: darisia@outlook.com
+Institution: University of the Witwatersrand, Johannesburg, South Africa
+Department: School of Molecular and Cell Biology
+Research areas: Bioinformatics (genetics and immunology)
+
+#### Dr Nikki Gentle
 
 
 ## License
