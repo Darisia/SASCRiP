@@ -579,10 +579,10 @@ Please see description above
 ## Authors
 
 #### Darisia Moonsamy
-email: darisia@outlook.com
-Institution: University of the Witwatersrand, Johannesburg, South Africa
-Department: School of Molecular and Cell Biology
-Research areas: Bioinformatics (genetics and immunology)
+email: darisia@outlook.com <br>
+Institution: University of the Witwatersrand, Johannesburg, South Africa <br>
+Department: School of Molecular and Cell Biology <br>
+Research areas: Bioinformatics (genetics and immunology) <br>
 
 #### Dr Nikki Gentle
 
