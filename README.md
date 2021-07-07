@@ -563,11 +563,11 @@ filter (bool):                             Indicate whether to filter the BUS fi
 
 include_checkpoints (bool):                Indicate whether to print all log statements to standard output
 
-kallisto_bustools_count_parameters (dict): Any additional parameters to be adjusted for the kallisto_bustools_count function in the same format as described above for **additional_sctransform_arguments
+kallisto_bustools_count_parameters (dict): Any additional parameters to be adjusted for the kallisto_bustools_count function in the same format as described above for **additional_sctransform_arguments. In this case the ** is not needed.
 
-run_cqc_parameters (dict):                 Any additional parameters to be adjusted for the run_cqc functions in the same format as described above for **additional_sctransform_arguments
+run_cqc_parameters (dict):                 Any additional parameters to be adjusted for the run_cqc functions in the same format as described above for **additional_sctransform_arguments. In this case the ** is not needed.
 
-additional_sctransform_arguments (dict):   Additional parameters (with key words) that should be passed to Seurat's SCTransform function - which additionally passes the parameters to the original stransform::vst function. This dictionary should be created in the same format as previously described for this parameter
+additional_sctransform_arguments (dict):   Additional parameters (with key words) that should be passed to Seurat's SCTransform function - which additionally passes the parameters to the original stransform::vst function. This dictionary should be created in the same format as previously described for this parameter. In this case the ** is not needed.
 
 ```` 
 
