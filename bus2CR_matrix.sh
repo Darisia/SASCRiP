@@ -24,7 +24,7 @@ bus2CR_matrix(){
 	$output_directory/UMI_colmatrix.tsv > $output_directory/matrix_noheader.mtx
 
 	# Add the header lines from the CellRanger matrix
-	{ echo '%%MatrixMarket matrix coordinate integer general\n%metadata_json: {"format_version": 2, "software_version": "3.1.0"}' ; cat $output_directory/matrix_noheader.mtx ; } > $output_directory/matrix.mtx
+	{ echo '%%MatrixMarket matrix coordinate integer general' ; cat $output_directory/matrix_noheader.mtx ; } > $output_directory/matrix.mtx
 
 	#bgzip the matrix file
 	gzip $output_directory/matrix.mtx

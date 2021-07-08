@@ -27,7 +27,9 @@ ensg_to_hgnc <- function(
   # Set the path to the ensg_gname.tsv file
   print("Looking for tsv file containing ENSG names and HGNC gene symbols")
   # read in the ensg_gname.tsv file
-  ensg_gname <- read_tsv(ensg_gname_path)
+  ensg_gname <- read_tsv(ensg_gname_path, col_names = FALSE)
+  # Add colnames to the ensg_gname file
+  ensg_gname(colnames) <- c("ENSEMBL_ID", "gene_name")
   # Assign read_in_seurat_object to sample_ID_srt
   sample_ID_srt <- read_in_seurat_object
   # Update Seurat object if saved as an old seurat object
@@ -129,7 +131,8 @@ gen_srt <- function(
   input_counts,
   sample_ID,
   output_folder,
-  ensg_gname_path
+  ensg_gname_path,
+  gene_column
 
 ){
   print("Generating the Seurat object from a gene-count matrix")
@@ -137,7 +140,8 @@ gen_srt <- function(
   if (endsWith(input_counts, ".h5") == TRUE) {
     sample_ID_data <- Read10X_h5(filename = input_counts)
   } else {
-    sample_ID_data <- Read10X(data.dir = input_counts)
+    sample_ID_data <- Read10X(data.dir = input_counts,
+                              gene.column = gene_column)
   }
   # Convert the data into a Seurat Object
   sample_ID_srt <- CreateSeuratObject(counts = sample_ID_data,
@@ -884,6 +888,7 @@ seurat_qc <- function(
   generate_seurat_object,
   subset_seurat_object,
   generate_default_plots,
+  gene_column,
   input_seurat_object,
   ensg_gname_path,
   gene_lower,
@@ -963,5 +968,6 @@ seurat_qc(
   args[13],
   args[14],
   args[15],
-  args[16]
+  args[16],
+  args[17]
 )
