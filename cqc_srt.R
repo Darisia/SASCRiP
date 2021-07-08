@@ -133,7 +133,6 @@ gen_srt <- function(
   output_folder,
   ensg_gname_path,
   gene_column
-
 ){
   print("Generating the Seurat object from a gene-count matrix")
   # import the data according to the file type
@@ -901,7 +900,13 @@ seurat_qc <- function(
   output_matrix
 ){
   if (generate_seurat_object == TRUE) {
-    seurat_object <- gen_srt(file, sample_ID, output_folder)
+    seurat_object <- gen_srt(
+      file,
+      sample_ID,
+      output_folder,
+      ensg_gname_path,
+      gene_column
+    )
   } else {
     seurat_object <- file
   }
