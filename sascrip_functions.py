@@ -4,7 +4,6 @@
 # ALL required modules
 import subprocess
 import os
-from gen_func import mkdirs
 # All things that need to be important for these the kb-python functions to work
 import kb_python
 from kb_python import ref
@@ -239,7 +238,7 @@ def filter_busfile(sorted_corrected_busfile, species_t2g, ecmap_path, transcript
     filtered_count_folder_files = os.path.join(output, path_to_prefix_count_files)
 
     # Make any directories if they don't exist already
-    mkdirs(output)
+    gen_func.mkdirs(output)
 
     # Run all the functions from kb_python.count() that will filter and then count the busfile
     count.bustools_whitelist(sorted_corrected_busfile, generated_whitelist)
@@ -250,20 +249,108 @@ def filter_busfile(sorted_corrected_busfile, species_t2g, ecmap_path, transcript
     # Move files with a particular prefix to a specific folder
     move_with_prefix(output, 'filtered_counts.', filtered_count_folder_files)
 
+# Sorting the fastq files for input into kalliso
+
+def sort_fastq_files(
+    fastq_directory, # List if there are more than one folders
+    read_separator,
+    single_cell_technology
+):
+    ################################################
+    # Creating the fastq files lists
+    ################################################
+    # Create the final empty list that will eventually form the list of
+    # .. ordered fastq files
+    fastq_ordered = []
+    # Accounting for more than one folders
+    if type(fastq_directory) is list:
+        fastq_directory = fastq_directory
+    else:
+        fastq_directory = fastq_directory.split(sep = ",")
+    # For loop
+    for directory in fastq_directory:
+        # Create the lists the files will be saved in
+        read_1_list = []
+        read_2_list = []
+        # If the single_cell_technology is 10xv1 we will need a third set of lists
+        if single_cell_technology == "10xv1":
+            read_3_list = []
+        # Set the list of all files using the input directory
+        all_files = sorted(os.listdir(directory))
+        #Check the read separators and make sure they aren't too "vague"
+        if (read_separator[0] == "1" or read_separator[0] == "_1" or read_separator[0] == "1_"):
+            for fastq_file in all_files:
+                if "_1_" in fastq_file or "_1." in fastq_file:
+                    read_1_list.append(fastq_file)
+                if "_2_" in fastq_file or "_2." in fastq_file:
+                    read_2_list.append(fastq_file)
+                if single_cell_technology == "10xv1":
+                    if "_3_" in fastq_file or "_3." in fastq_file:
+                        read_3_list.append(fastq_file)
+        else:
+            for fastq_file in all_files:
+                if read_separator[0] in fastq_file:
+                    read_1_list.append(fastq_file)
+                if read_separator[1] in fastq_file:
+                    read_2_list.append(fastq_file)
+                if single_cell_technology == "10xv1":
+                    if read_separator[2] in fastq_file:
+                        read_3_list.append(fastq_file)
+
+        ####################################################################
+        # Creating the index and using dictionaries to sort the fastq files
+        ####################################################################
+        # Assign the indices
+        if single_cell_technology != "10xv1":
+            read_1_index = list(range(0, len(read_1_list)*2, 2))
+            read_2_index = list(range(1, len(read_2_list)*2, 2))
+            combined_read_index = read_1_index + read_2_index
+            combined_read_list = read_1_list + read_2_list
+        else:
+            read_1_index = list(range(0, len(read_1_list)*3, 3))
+            read_2_index = list(range(1, len(read_2_list)*3, 3))
+            read_3_index = list(range(2, len(read_3_list)*3, 3))
+            combined_read_index = read_1_index + read_2_index + read_3_index
+            combined_read_list = read_1_list + read_2_list + read_3_list
+
+        combined_dictionary = dict(zip(combined_read_index, combined_read_list))
+        ordered_read_index = sorted(combined_read_index)
+
+
+        # Use the for loop to extract the files from the dictionary in the order
+        # .. specified by the ordered_read_index
+        for i in ordered_read_index:
+            fastq_value = combined_dictionary[i]
+            fastq_ordered.append(fastq_value)
+
+    return(fastq_ordered)
+
 # Defines the function to check if ERCCs are present within the dataset
 def check_ercc(
             ERCC_fasta,
             all_out_path,
             list_of_fastqs,
             single_cell_technology,
+            input_directory = False,
+            read_separator = None,
             UMI_bp='0',
             barcode_bp='0',
             transcript_bp='0'
 ):
     # Make the output directory if it does not already exist
-    mkdirs(all_out_path)
+    gen_func.mkdirs(all_out_path)
 
     ercc_log_file = os.path.join(all_out_path, 'check_ercc.log')
+
+    # Check if the fastq files need to be captured and sorted
+    if input_directory is True:
+        sorted_fastqs_list = sort_fastq_files(
+            fastq_directory = list_of_fastqs,
+            read_separator = read_separator,
+            single_cell_technology = single_cell_technology
+        )
+        # Set list of fastqs as the sorted generated list
+        list_of_fastqs = sorted_fastqs_list
 
     # Create paths for all files and directories generated within this function
     all_ERCC_out_path = os.path.join(all_out_path, 'ERCC_analysis')
@@ -297,7 +384,9 @@ def check_ercc(
 def kallisto_bustools_count(
                         list_of_fastqs,
                         single_cell_technology,
-                        all_out_path, # change to output_directory
+                        all_out_path, # change to output_directory,
+                        input_directory = False,
+                        read_separator = None,
                         generate_index = False,
                         species_index = None,
                         species_t2g = None,
@@ -314,7 +403,7 @@ def kallisto_bustools_count(
                         memory = '4G'
 ):
     # Make the output directories if it does not exist
-    mkdirs(all_out_path)
+    gen_func.mkdirs(all_out_path)
 
     count_log_file = os.path.join(all_out_path, 'kb_count.log')
 
@@ -341,6 +430,16 @@ def kallisto_bustools_count(
         # set species_index to the saved index and species_t2g to the saved gene mapping file
         species_index = './kallisto_index.idx'
         species_t2g = './transcript_to_genes.txt'
+
+    # Check if the fastq files need to be captured and sorted
+    if input_directory is True:
+        sorted_fastqs_list = sort_fastq_files(
+            fastq_directory = list_of_fastqs,
+            read_separator = read_separator,
+            single_cell_technology = single_cell_technology
+        )
+        # Set list of fastqs as the sorted generated list
+        list_of_fastqs = sorted_fastqs_list
 
     # Create paths for all the other files and directories generated within this function
     all_count_out_path = os.path.join(all_out_path, 'Count_analysis')
@@ -402,6 +501,8 @@ def include_ERCC_bus_count(
                         all_out_path,
                         ERCC_fasta,
                         species_fasta,
+                        input_directory = False,
+                        read_separator = None,
                         generate_index = False,
                         species_index = None,
                         species_t2g = None,
@@ -416,7 +517,7 @@ def include_ERCC_bus_count(
                         path_to_prefix_count_files='unfiltered_counts',
                         memory = '4G'
 ):
-    mkdirs(all_out_path)
+    gen_func.mkdirs(all_out_path)
 
     # Run the check_ercc function which returns a True or False
     is_ercc_included = check_ercc(
@@ -424,6 +525,8 @@ def include_ERCC_bus_count(
                             all_out_path=all_out_path,
                             list_of_fastqs=list_of_fastqs,
                             single_cell_technology=single_cell_technology,
+                            input_directory = input_directory,
+                            read_separator = read_separator,
                             UMI_bp=UMI_bp,
                             barcode_bp=barcode_bp,
                             transcript_bp=transcript_bp
@@ -440,7 +543,7 @@ def include_ERCC_bus_count(
         ERCC_combined_t2g = os.path.join(all_ERCC_out_path, 'ERCC_combined_t2g.txt')
 
         # Combine the ERCC fasta file and the species fasta files
-        concat_gz(species_ERCC_fasta, ERCC_fasta, species_fasta)
+        gen_func.concat_gz(species_ERCC_fasta, ERCC_fasta, species_fasta)
 
         # Generate the kallisto_index using functions from the kb_python package
         ref.kallisto_index(species_ERCC_fasta, ERCC_combined_index)
@@ -454,7 +557,7 @@ def include_ERCC_bus_count(
                     outfile.write(new_line)
 
         # Combine the ERCC t2g and species t2g
-        concat_files(ERCC_combined_t2g, ERCC_annotations, species_t2g)
+        gen_func.concat_files(ERCC_combined_t2g, ERCC_annotations, species_t2g)
 
         species_index = ERCC_combined_index
         species_t2g = ERCC_combined_t2g
@@ -468,6 +571,8 @@ def include_ERCC_bus_count(
                         list_of_fastqs = list_of_fastqs,
                         single_cell_technology = single_cell_technology,
                         all_out_path = all_out_path,
+                        input_directory = input_directory,
+                        read_separator = read_separator,
                         generate_index = generate_index,
                         species_index=species_index,
                         species_t2g=species_t2g,
@@ -576,8 +681,8 @@ def run_cqc(input_file_or_folder,
             generate_seurat_object = True,
             subset_seurat_object = True,
             generate_default_plots = True,
-            input_seurat_object = False,
             gene_column = 1,
+            input_seurat_object = False,
             transcripts_to_genes_file = None,
             gene_lower = 200,
             gene_higher_method = "MAD",
@@ -625,7 +730,7 @@ def run_cqc(input_file_or_folder,
 
     # Generate the directories if it does not already exist
     if output_folder != "working_directory":
-        mkdirs(output_folder)
+        gen_func.mkdirs(output_folder)
 
     # Convert the None inputs to a string to be input into bash
     if gene_lower is None:
@@ -638,7 +743,7 @@ def run_cqc(input_file_or_folder,
     # Generate the directory where the output mtx matrix would be saved
     if output_matrix == True:
         output_matrix_dir = os.path.join(output_folder, sample_ID + '_QC_matrix_output')
-        mkdirs(output_matrix_dir)
+        gen_func.mkdirs(output_matrix_dir)
 
 
 
