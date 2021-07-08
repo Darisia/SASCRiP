@@ -245,7 +245,7 @@ Please see description above
 
 ## include_ERCC_bus_count
 
-include_ERCC_bus_count first checks if ERCC spike-ins are included in the dataset and generates counts with kallisto_bustools_count accordingly. To check if spike-ins are present, a Kallisto index is generated from the ERCC FASTA and the FastQ sequences from the dataset are aligned to the ERCC index. if no sequences align to the ERCC index, the gene-count matrix will be generated without including ERCC sequences. However, if there are seqeunces that align to the ERCC index, the ERCC FASTA seqeunce and the species FASTA sequence will be combined to create a new kallisto index. Therefore, the final gene-count matrix will include ERCC sequences.
+`include_ERCC_bus_count` first checks if ERCC spike-ins are included in the dataset and generates counts with kallisto_bustools_count accordingly. To check if spike-ins are present, a Kallisto index is generated from the ERCC FASTA and the FastQ sequences from the dataset are aligned to the ERCC index. if no sequences align to the ERCC index, the gene-count matrix will be generated without including ERCC sequences. However, if there are seqeunces that align to the ERCC index, the ERCC FASTA seqeunce and the species FASTA sequence will be combined to create a new kallisto index. Therefore, the final gene-count matrix will include ERCC sequences.
 
 #### Usage
 
@@ -386,6 +386,7 @@ sascrip_functions.run_cqc(
      generate_seurat_object = True,
      subset_seurat_object = True,
      generate_default_plots = True,
+     gene_column = 1,
      input_seurat_object = False,
      ENSG_gname38_path = "working_directory",
      gene_lower = 200,
@@ -421,6 +422,8 @@ generate_seurat_object (bool):      Indicate whether a seurat object should be g
 subset_seurat_object (bool):        Indicate whether the Seurat object should be subset, removing low-quality cells identified by given thresholds
 
 generate_default_plots (bool):      Indicate whether deafault plots should be generated to visualise the single-cell data and identified low-quality cells
+
+gene_column (int):                  The column number in the genes index file that should be used for the row names (gene names) in the Seurat object
 
 input_seurat_object (bool):         Indicate whether the input_file_or_folder parameter contains the path to a saved Seurat object. If so, this parameter should be set to True
 
