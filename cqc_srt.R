@@ -29,7 +29,7 @@ ensg_to_hgnc <- function(
   # read in the ensg_gname.tsv file
   ensg_gname <- read_tsv(ensg_gname_path, col_names = FALSE)
   # Add colnames to the ensg_gname file
-  ensg_gname(colnames) <- c("ENSEMBL_ID", "gene_name")
+  colnames(ensg_gname) <- c("ENSEMBL_ID", "gene_name")
   # Assign read_in_seurat_object to sample_ID_srt
   sample_ID_srt <- read_in_seurat_object
   # Update Seurat object if saved as an old seurat object
@@ -140,7 +140,7 @@ gen_srt <- function(
     sample_ID_data <- Read10X_h5(filename = input_counts)
   } else {
     sample_ID_data <- Read10X(data.dir = input_counts,
-                              gene.column = gene_column)
+                              gene.column = as.double(gene_column))
   }
   # Convert the data into a Seurat Object
   sample_ID_srt <- CreateSeuratObject(counts = sample_ID_data,
@@ -343,14 +343,14 @@ damaged_scatter <- function(
     theme(panel.background = element_blank(),
          axis.line = element_line(colour = "black"))
 
-  ggsave(filename = sprintf("%s/%s_lower_gene.png",
-                            output_folder,
-                            sample_ID),
+  ggsave(sprintf("%s/%s_lower_gene.png",
+                output_folder,
+                sample_ID),
         sample_ID_preQC_scat,
-        dpi = 900,
         width = 210,
         height = 150,
-        units = "mm")
+        units = "mm",
+        dpi = 900)
 
   # Create the plot for the mitochondrial genes percentage after lower genes
   sample_ID_preQC_mito <- sample_ID_preQC_df %>%
@@ -385,10 +385,10 @@ damaged_scatter <- function(
   ggsave(
     filename = sprintf("%s/%s_mito_cutoff.png", output_folder, sample_ID),
     sample_ID_preQC_mito,
-    dpi = 900,
     width = 210,
     height = 150,
-    units = "mm"
+    units = "mm",
+    dpi = 900
   )
 
 }
@@ -454,7 +454,7 @@ doublet_plots <- function(
                                                                   colour = outlier_class)) +
                                geom_point() +
                                scale_colour_manual(values = c("blue", "#00ff7f"),
-                                                    labels = c("Singlet", "Multiplet")) +
+                                                    labels = c("Singlet", "Doublet")) +
                                labs(x = "Total number of unique genes detected",
                                     y = "Total number of UMIs detected",
                                     colour = "") +
@@ -479,11 +479,13 @@ doublet_plots <- function(
 
   ggsave(
     filename = sprintf("%s/%s_doublet_scatter.png",
+                        output_folder,
+                        sample_ID),
     sample_ID_doublet_scatter,
-    dpi = 900,
     width = 210,
     height = 150,
-    units = "mm")
+    units = "mm",
+    dpi = 900
   )
 
   # Add in a column to the nodamaged_df to mention the sample name
@@ -532,10 +534,10 @@ doublet_plots <- function(
                         output_folder,
                         sample_ID),
     sample_ID_doublet_box,
-    dpi = 900,
     width = 210,
     height = 150,
-    units = "mm"
+    units = "mm",
+    dpi = 900
   )
 }
 
@@ -668,7 +670,7 @@ sub_srt <- function(
     # Subset the Seurat object
     sample_ID_srt <- subset(sample_ID_srt, subset = nFeature_RNA > as.numeric(gene_lower))
     # Keep record of how many cells were removed and how many cells are remaining
-    cells_after_lower_cutoff = nrow(sample_ID_srt@met.data)
+    cells_after_lower_cutoff = nrow(sample_ID_srt@meta.data)
     print_statement_cells_after_lower_cutoff = sprintf("%s cells remaining after applying lower threshold on gene count",
                                                         cells_after_lower_cutoff)
     number_cells_below_threshold = starting_cells - cells_after_lower_cutoff
@@ -849,7 +851,7 @@ default_plots <- function(
     ensg_gname_path
   )
   # Generate all plots representing damaged cells
-  if (gene_lower == "None" & mitochondria_percent == "None"){
+  if (gene_lower != "None" & mitochondria_percent != "None"){
     damaged_scatter(
       seurat_object,
       sample_ID,

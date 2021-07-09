@@ -50,8 +50,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 formatter = logging.Formatter("%(asctime)s:%(levelname)s:\n%(message)s")
 file_handler = logging.FileHandler("sascrip.log")
-file_handler = setLevel(logging.DEBUG)
-file_handler = setFormatter(formatter)
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(formatter)
 stream_handler = logging.StreamHandler()
 logger.addHandler(file_handler)
 
@@ -71,7 +71,7 @@ def install_R_packages():
     check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
     # Check to see if there was an error. If so, print the standard error - This should be edited to print readible errors
-    if check_prcoess.returncode != 0:
+    if check_process.returncode != 0:
         print(check_process.stderr.decode())
 
     # Add the standard output to the logfile
@@ -150,55 +150,71 @@ def run_fastqc(fastq_input_list, fastqc_output_list, fastqc_options_list):
 ####################################################################################################
 
 def edit_10xv1_fastq(
-	input_folder,
-	output_folder):
+    input_folder,
+    output_folder):
 
-	'''
-	Separates the RA fastq 10xv1 file into two separate files where one file contains the UMI sequences and the other contains the transcript sequences
+    '''
+    Separates the RA fastq 10xv1 file into two separate files where one file contains the UMI sequences and the other contains the transcript sequences
 
-	Parameters:
+    Parameters:
 
-	input_folder(str): Path to the directory containing the RA 10xv1 fastq files
-	output_folder(str): Path to the output directory where the new separated fastq files will be saved
+    input_folder(list-str): Path to the directory containing the RA 10xv1 fastq files
+    output_folder(list-str): Path to the output directory where the new separated fastq files will be saved
 
-	'''
+    '''
 
-	# First we use the input folder - search for all files
-	# .. that start with read-RA and put those filenames into a list
-	# .. with the containing folder
+    # First we use the input folder - search for all files
+    # .. that start with read-RA and put those filenames into a list
+    # .. with the containing folder
 
-	# Before the loop - let's create an empty list for all the RA files
-	RA_10xv1_files = []
+    # Accounting for more than one folders
+    if type(input_folder) is list:
+        input_folder = input_folder
+    else:
+        input_folder = input_folder.split(sep = ",")
 
-	for fastq_file in os.listdir(input_folder):
-		if fastq_file.startswith("read-RA_"):
-			RA_file_name = fastq_file
-			RA_file_path = os.path.join(input_folder, RA_file_name)
-			RA_10xv1_files.append(RA_file_path)
+    # Accounting for more than one folders
+    if type(output_folder) is list:
+        output_folder = output_folder
+    else:
+        output_folder = output_folder.split(sep = ",")
 
-	# Once the list is created - need to combine the list into a string
-	# .. separated by a comma (,)
-	RA_10xv1_files_string = ",".join(RA_10xv1_files)
 
-	# Edit folder paths
-	if output_folder.endseith("/"):
-		output_folder = os.path.dirname(output_folder)
-	else:
-		output_folder = output_folder
+    # Combine the input directory list and output directory list into a dictionary
+    input_folder.extend(output_folder)
+    for i in range(0, len(output_folder), 1):
+        x = i + len(output_folder)
+        if x < len(input_folder):
+            list_dict = {input_folder[i] : input_folder[i + len(output_folder)] for i in range(0, len(output_folder), 1)}
 
-	# Let's create the bash command
-	command = "./edit_fastq_function.sh {} {}".format(RA_10xv1_files_string, output_folder)
 
-	# The Bash command needs to be run and checked
-	subprocess.run(command, shell = True)
+    for fastq_input, fastq_output in list_dict.items():
+        RA_10xv1_files = []
+        for file in sorted(os.listdir(fastq_input)):
+            if file.startswith("read-RA_"):
+                RA_file_name = file
+                RA_file_path = os.path.join(fastq_input, RA_file_name)
+                RA_10xv1_files.append(RA_file_path)
 
-	check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        # Once the list is created - need to combine the list into a string
+        # .. separated by a comma (,)
+        RA_10xv1_files_string = ",".join(RA_10xv1_files)
 
-	if check_process.returncode != 0:
-   		return(check_process.stderr.decode())
+        # Edit folder paths
+        if fastq_output.endswith("/"):
+          fastq_output = os.path.dirname(fastq_output)
+        else:
+          fastq_output = fastq_output
 
-    logger.info(check_process.stdout.decode())
+        # Let's create the bash command
+        command = "./edit_fastq_function.sh {} {}".format(RA_10xv1_files_string, fastq_output)
 
+        check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+
+        if check_process.returncode != 0:
+            return(check_process.stderr.decode())
+
+        logger.info(check_process.stdout.decode())
 #####################################################################################################################################
 
 ####################################################################
@@ -247,7 +263,7 @@ def filter_busfile(sorted_corrected_busfile, species_t2g, ecmap_path, transcript
     count.bustools_count(captured_busfile, filtered_count_folder_files, species_t2g, ecmap_path, transcripts_path)
 
     # Move files with a particular prefix to a specific folder
-    move_with_prefix(output, 'filtered_counts.', filtered_count_folder_files)
+    gen_func.move_with_prefix(output, 'filtered_counts.', filtered_count_folder_files)
 
 # Sorting the fastq files for input into kalliso
 
@@ -281,21 +297,27 @@ def sort_fastq_files(
         if (read_separator[0] == "1" or read_separator[0] == "_1" or read_separator[0] == "1_"):
             for fastq_file in all_files:
                 if "_1_" in fastq_file or "_1." in fastq_file:
-                    read_1_list.append(fastq_file)
+                    fastq_file_path = os.path.join(directory, fastq_file)
+                    read_1_list.append(fastq_file_path)
                 if "_2_" in fastq_file or "_2." in fastq_file:
-                    read_2_list.append(fastq_file)
+                    fastq_file_path = os.path.join(directory, fastq_file)
+                    read_2_list.append(fastq_file_path)
                 if single_cell_technology == "10xv1":
                     if "_3_" in fastq_file or "_3." in fastq_file:
-                        read_3_list.append(fastq_file)
+                        fastq_file_path = os.path.join(directory, fastq_file)
+                        read_3_list.append(fastq_file_path)
         else:
             for fastq_file in all_files:
                 if read_separator[0] in fastq_file:
-                    read_1_list.append(fastq_file)
+                    fastq_file_path = os.path.join(directory, fastq_file)
+                    read_1_list.append(fastq_file_path)
                 if read_separator[1] in fastq_file:
-                    read_2_list.append(fastq_file)
+                    fastq_file_path = os.path.join(directory, fastq_file)
+                    read_2_list.append(fastq_file_path)
                 if single_cell_technology == "10xv1":
                     if read_separator[2] in fastq_file:
-                        read_3_list.append(fastq_file)
+                        fastq_file_path = os.path.join(directory, fastq_file)
+                        read_3_list.append(fastq_file_path)
 
         ####################################################################
         # Creating the index and using dictionaries to sort the fastq files
@@ -480,7 +502,7 @@ def kallisto_bustools_count(
     count.bustools_count(sorted_corrected_busfile, unfiltered_count_folder_files, species_t2g, ecmap, transcripts)
 
     # Move the generated unfiltered files into the unfiltered directory
-    move_with_prefix(all_count_out_path, path_to_prefix_count_files+'.', unfiltered_count_folder_files)
+    gen_func.move_with_prefix(all_count_out_path, path_to_prefix_count_files+'.', unfiltered_count_folder_files)
 
     # Run filter_busfile if specified
     if filter==True:
@@ -617,53 +639,51 @@ def seurat_matrix(
 
     # Let's start by checking and/or creating the output directory
 	# .. That means we need the gen_func script
-	if output_directory == "working_directory":
-		output_directory = "./"
-	else:
-		gen_func.mkdirs(output_directory)
+    if output_directory=="working_directory":
+        output_directory = "./"
+    else:
+        gen_func.mkdirs(output_directory)
 
     ## First edit the gene index
     # Let's put together the bash command
-	command = "sh ./bus2CR_features.sh {} {}".format(
-		bustools_gene_index,
-		output_directory)
+    command = "sh ./bus2CR_features.sh {} {}".format(
+	bustools_gene_index,
+	output_directory)
 
 	# Run the bash command using subproces.run and save the standard output to check_process
-	check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
-	# Check the returncode - if there were errors - print the standard errors
-	if check_process.returncode != 0:
-		print(check_process.stderr.decode())
+    # Check the returncode - if there were errors - print the standard errors
+    if check_process.returncode != 0:
+        print(check_process.stderr.decode())
 
     logger.info(check_process.stdout.decode())
 
     # Edit the barcode file
     # put the bash command together
-	command = "sh ./bus2CR_barcodes.sh {} {}".format(
-		bustools_barcode_index,
-		output_directory)
+    command = "sh ./bus2CR_barcodes.sh {} {}".format(
+        bustools_barcode_index,
+	output_directory)
 
-	# Run the bash command using subprocess.run and save the standard output to check_process
-	check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    # Run the bash command using subprocess.run and save the standard output to check_process
+    check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
-	# check the returncode - if there are errors - print the standard errors
-	if check_process.returncode != 0:
-		print(check_process.stderr.decode())
+    # check the returncode - if there are errors - print the standard errors
+    if check_process.returncode != 0:
+        print(check_process.stderr.decode())
 
     logger.info(check_process.stdout.decode())
 
     # Edit the mtx output matrix
     # put the bash command together
-	command = "sh ./bus2CR_matrix.sh {} {}".format(
-		bustools_mtx_matrix,
-		output_directory)
+    command = "sh ./bus2CR_matrix.sh {} {}".format(bustools_mtx_matrix, output_directory)
 
-	# Run the bash command using subprocess.run and save the standard output to check_process
-	check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    # Run the bash command using subprocess.run and save the standard output to check_process
+    check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
 	# check the returncode - if there are errors - print the standard errors
-	if check_process.returncode != 0:
-		print(check_process.stderr.decode())
+    if check_process.returncode != 0:
+        print(check_process.stderr.decode())
 
     logger.info(check_process.stdout.decode())
 
@@ -786,7 +806,7 @@ def run_cqc(input_file_or_folder,
 
     # if transcripts_to_genes supplied - create ensg_gname
     if transcripts_to_genes_file != None:
-        command = 'sh cut_t2g_sh {} {}'.format(
+        command = 'sh cut_t2g.sh {} {}'.format(
         transcripts_to_genes_file,
         output_folder
         )
@@ -794,12 +814,12 @@ def run_cqc(input_file_or_folder,
         check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
         # check to see if that variable has a returncode above 0 - if it does, print the error message
-        if check_command.returncode != 0:
-            print(check_command.stderr.decode())
-            print(check_command.stdout.decode())
+        if check_process.returncode != 0:
+            print(check_process.stderr.decode())
+            print(check_process.stdout.decode())
 
         # Print all standard output to log file
-        logger.info(check_command.stdout.decode())
+        logger.info(check_process.stdout.decode())
 
         ensg_gname_path = os.path.join(output_folder, "ensg_gname.tsv")
     else:
@@ -808,13 +828,14 @@ def run_cqc(input_file_or_folder,
 
 
     # The bash commands to run the cell quality control R script
-    command = 'Rscript cqc_srt.R {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(
+    command = 'Rscript cqc_srt.R {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(
     input_file_or_folder,
     sample_ID,
     output_folder,
     generate_seurat_object,
     subset_seurat_object,
     generate_default_plots,
+    gene_column,
     input_seurat_object,
     ensg_gname_path,
     gene_lower,
@@ -959,6 +980,104 @@ def sctransform_normalize(
 	if check_process.returncode != 0:
 		print(check_process.stderr)
 
-    # Print all standard output to the log file
-    logger.info(check_process.stdout.decode())
-    logger.info("sctransform_normalize has finished running")
+####################################################################################################
+
+####################################################################################################
+# Function to run sascrips preprocessing steps in one go
+####################################################################################################
+
+# Run with default parameters otherwise use the dictionary keyword option
+
+def sascrip_preprocess(
+    output_directory, # Remember to change this in other sripts and functions too
+    sample_ID,
+    list_of_fastqs,
+    single_cell_technology,
+    species_index,
+    species_t2g,
+    filter = True,
+    include_checkpoints = True,
+    kallisto_bustools_count_parameters = None, # Dictionary - use as indicated in documentation # NB for 10xv1 data
+    run_cqc_parameters = None, # Dictionary - use as indicated in documentation
+    additional_sctransform_arguments = None # Dictionary - use as indicated in documentaion
+    ):
+
+    # Import the required packages
+    import sascrip_functions
+
+    # First we need to break down the steps
+    # Step one: Run kallisto_bustools_count to generate the unfiltered and filtered gene count matrix
+    gen_files = sascrip_functions.kallisto_bustools_count(
+        list_of_fastqs = list_of_fastqs,
+        single_cell_technology = single_cell_technology,
+        all_out_path = output_directory,
+        species_index = species_index,
+        species_t2g = species_t2g,
+        filter = filter,
+        **kallisto_bustools_count_parameters
+        )
+
+    # Step two would be to edit the bus matrix and get it ready for input into Seurat
+    ## First we need to set the paths to the generated matrix and features file
+    all_count_out_path = os.path.join(all_out_path, "Count_analysis")
+    unfiltered_path = os.path.join(all_count_out_path, "unfiltered_counts")
+    filtered_path = os.path.join(all_count_out_path, "filtered_counts")
+    unfiltered_mtx_matrix = os.path.join(unfiltered_path, "unfiltered_counts.mtx")
+    unfiltered_barcodes = os.path.join(unfiltered_path, "unfiltered_counts.barcodes.txt")
+    unfiltered_genes = os.path.join(unfiltered_path, "unfiltered_counts.genes.txt")
+    filtered_mtx_matrix = os.path.join(filtered_path, "filtered_counts.mtx")
+    filtered_barcodes = os.path.join(filtered_path, "filtered-counts.barcodes.txt")
+    filtered_genes = os.path.join(filtered_path, "filtered_counts.genes.txt")
+    species_t2g = gen_files["transcript_to_genes"]
+
+    if filter is True:
+        sascrip_functions.seurat_matrix(
+            filtered_mtx_matrix,
+            filtered_genes,
+            filtered_barcodes,
+            filtered_path
+        )
+    else:
+        sascrip_functions.seurat_matrix(
+            unfiltered_mtx_matrix,
+            unfiltered_genes,
+            unfiltered_barcodes,
+            unfiltered_path
+        )
+
+    # Step three is to input the generated and edited count matrix into Seurat to generate a seurat object and subset it based
+    # .. on filtering thresholds
+    if filter is True:
+        input_files = filtered_path
+    else:
+        input_files = unfiltered_path
+
+    # now we need to run the "run_cqc" function
+    # Create new folder for quality control stuff
+    cell_quality_control_folder = os.path.join(all_out_path, "Cell_quality_control_analysis")
+    mkdirs(cell_quality_control_folder)
+
+    # Call the function
+    run_cqc(
+    input_file_or_folder = input_files,
+    sample_ID = sample_ID,
+    output_folder = cell_quality_control_folder,
+    transcripts_to_genes_file = species_t2g
+    **run_cqc_parameters
+    )
+
+    # Set name of the subset seurat object produced
+    subset_seurat_filename = sample_ID + "_subset_seurat.rds"
+    subset_seurat = os.path.join(cell_quality_control_folder, subset_seurat_filename)
+
+    # Now it's time to run the normalization function
+    # First create the directory to store this stuff
+    normalized_folder = os.path.join(all_out_path, "sctransform_normalized")
+    mkdirs(normalized_folder)
+    # Call the function
+    sctransform_normalize(
+    seurat_object = subset_seurat,
+    sample_ID = sample_ID,
+    output_directory = normalized_folder,
+    **additional_sctransform_arguments
+    )
