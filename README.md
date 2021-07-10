@@ -66,7 +66,7 @@ sascrip_functions.install_R_packages()
 
 ## edit_10xv1_fastq
 
-edit_10xv1_fastq prepares FastQ files, obtained using the 10xv1 sequencing chemistry, for input into Kallisto for pseudoalignment and quantification. The directory containing the FastQ files are input into edit_10xv1_fastq which searches for the RA FastQ file that contains both the UMI and transcript sequence. The UMI and Transcript sequences are separated into their own FastQ files. The directory containing all these FastQ files can be input into kallisto_bustools_count for further processing
+`edit_10xv1_fastq` prepares FastQ files, obtained using the 10xv1 sequencing chemistry, for input into Kallisto for pseudoalignment. The directory/s containing the FastQ files are input into `edit_10xv1_fastq` which searches for the RA FastQ file that contains both the UMI and transcript sequence. The UMI and Transcript sequences are separated into their own FastQ files. The directory/s containing all these FastQ files can be input into kallisto_bustools_count for further processing. The produced FastQ files will be saved in the same directory containing all the input FastQ files.
 
 #### Usage
 
@@ -74,7 +74,7 @@ edit_10xv1_fastq prepares FastQ files, obtained using the 10xv1 sequencing chemi
 import sascrip
 from sascrip import sascrip_functions
 
-sascrip_functions.edit_10xv1_fastq(input_directory, output_directory)
+sascrip_functions.edit_10xv1_fastq(input_directories)
 
 ````
 #### Parameters
@@ -83,15 +83,13 @@ sascrip_functions.edit_10xv1_fastq(input_directory, output_directory)
 Required parameters
 ___________________
 
-input_directory (str): Path to the directory containing the RA 10xv1 FastQ files
-
-output-directory (str): Path to the output directory where the new separated FastQ files will be saved
+input_directories (str-list): Path to the directory/s containing the RA 10xv1 FastQ files. If there are more than one directories. A list should be given with all input directories 
 
 ````    
 
-## check_ercc
+## `check_ercc`
 
-check_ercc allows the user to check if the single-cell dataset may contain RNA spike-ins that can be used as an additional cell-quality control metric. If check_ercc is run, True or False - depending on whether ERCCs are included or not, will be returned as standard output 
+`check_ercc` allows the user to check if the single-cell dataset may contain RNA spike-ins that can be used as an additional cell-quality control metric. If check_ercc is run, True or False - depending on whether ERCCs are included or not, will be returned as standard output 
 
 #### Usage
 
@@ -101,9 +99,11 @@ from sascrip import sascrip_functions
 
 sascrip_functions.check_ercc(
      ERCC_fasta,
-     output_directory,
+     output_directory_path,
      list_of_fastqs,
      single_cell_technology,
+     input_directory = False,
+     read_separator = None,
      UMI_bp = '0',
      barcode_bp = '0',
      transcript_bp = '0'
@@ -118,14 +118,18 @@ ___________________
 
 ERCC_fasta (str):             Path to the ERCC FASTA file
 
-output_directory (str):       Path to the output directory where output files will be saved
+output_directory_path (str):  Path to the output directory where output files will be saved
 
-list_of_fastqs (str-list):    Python list of the paths to input FastQ files in the *order specified by Kallisto
+list_of_fastqs (str-list):    Python list of the paths to input FastQ files in the *order specified by Kallisto. The folder containing all the input files can be given instead and the relevant FastQ files will be captured and sorted in the correct order. To use this feature - input the path to the directory here (If multiple directories are used, input all the directories as a list), set input_directory = True and provide the strings used to separate the reads in the read_separator parameter. * See example below
 
 single_cell_technology (str): The single-cell sequencing technology that was used as *specified by Kallisto. If 10xv1 technology was used, the UMI_bp and barcode_bp parameters are required
 
 Optional parameters
 ___________________
+
+input_directory (bool):       Indicate whether the list_of_fastqs parameter is given the path to the directory containing all input FastQ files * See example below
+
+read_separator (str-list):    The strings used to separate the input reads. Within a list - the first element should contain the string used to identify read 1, the second element should contain the string used to identify read 2 and if "10xv1" FastQ files are used, a third element is required that contains the string used to identify read 3. * See example below
 
 UMI_bp (str):                 The number of base pairs sequenced for the UMI sequence. If 10xv1 technology is used, this parameter is required
 
@@ -151,10 +155,26 @@ transcript_bp (str):          The number of base pairs sequenced for the transcr
 
 * **Working with more than one set of fastq files**
 
-Include the additional sets in the fastq list, keeping the sets together. For example: if you have 2 sets of fastq files from the 10xv2 chemistry
+Include the additional sets in the fastq list, keeping the sets together. For example: if you have 2 sets of FastQ files from the 10xv2 chemistry
+
 ```python
 
-list_of_fastqs = ["barcode-UMI_R1_1.fastq.gz", "Transcript_R2_1.fastq.gz", "barcode_UMI_R1_2.fastq.gz", "Transcript_R2_2.fastq.gz"]
+list_of_fastqs = ["barcode_UMI_R1_1.fastq.gz", "Transcript_R2_1.fastq.gz", "barcode_UMI_R1_2.fastq.gz", "Transcript_R2_2.fastq.gz"]
+
+```
+Additionally, the directory/s containing all the relevant FastQ files can be given to the `list_of_fastqs` parameter and the FastQ files will be captured and sorted within the function, provided that `input_directory` is set to True and the `read_separator` is given. An example showing how these parameters should be set is shown below. 
+
+Two sets of FastQ files (as shown below) are contained within a directory called "FastQ_directory":
+barcode_UMI_R1_1.fastq.gz
+Transcript_R2_1.fastq.gz
+barcode_UMI_R1_2.fastq.gz
+Transcript_R2_2.fastq.gz
+
+```python
+
+list_of_fastqs = "path/to/FastQ_directory"
+input_directory = True
+read_separator = ["R1", "R2"]
 
 ```
 
