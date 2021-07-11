@@ -66,36 +66,35 @@ loadRData <- function(filename) {
   get(ls()[ls() != "filename"])
 }
 
+####################################################################################
 # R function to replace the ENSEMBL IDs with hgnc gene names within a Seurat object
+####################################################################################
 ensg_to_hgnc <- function(
-  ENSG_gname38_path = "working_directory",
-  seurat_object,
+  ensg_gname_path,
+  read_in_seurat_object,
   sample_ID
 ){
-  # Set the path to the ENSg_gname38.tsv file
-  if (ENSG_gname38_path == "working_directory") {
-    ENSG_gname38_path = "./ENSG_gname38.tsv"
-  } else {
-    ENSG_gname38_path = ENSG_gname38_path
-  }
-  # read in the ENSG_gname38.tsv file
-  ENSG_gname38 <- read_tsv(ENSG_gname38_path)
-  # Read in the saved seurat object
-  if (endsWith(seurat_object, ".rds") == TRUE | endsWith(seurat_object, "RDS") == TRUE) {
-    sample_ID_srt <- readRDS(file = seurat_object)
-  } else {
-    sample_ID_srt <- loadRData(seurat_object)
-  }
+  print("Seurat object contains ENSEMBL gene names")
+  # Set the path to the ensg_gname.tsv file
+  print("Looking for tsv file containing ENSG names and HGNC gene symbols")
+  # read in the ensg_gname.tsv file
+  ensg_gname <- read_tsv(ensg_gname_path, col_names = FALSE)
+  # Add colnames to the ensg_gname file
+  colnames(ensg_gname) <- c("ENSEMBL_ID", "gene_name")
+  # Assign read_in_seurat_object to sample_ID_srt
+  sample_ID_srt <- read_in_seurat_object
   # Update Seurat object if saved as an old seurat object
   sample_ID_srt <- UpdateSeuratObject(sample_ID_srt)
   # Generate the dataframe that will be used to match and replace the ENSEMBL IDs
-  pmatch_output <- data.frame(pmatch(ENSG_gname38$ENSEMBL_ID, rownames(sample_ID_srt@assays[["RNA"]]@counts)))
+  pmatch_output <- data.frame(pmatch(ensg_gname$ENSEMBL_ID, rownames(sample_ID_srt@assays[["RNA"]]@counts)))
   colnames(pmatch_output) <- "gene_match"
   pmatch_output$match_index <- rownames(pmatch_output)
   pmatch_output <- pmatch_output[order(pmatch_output$gene_match), ]
   pmatch_output <- filter(pmatch_output, !is.na(gene_match))
   # Match and replace the ENSEMBL IDs in the relevant slots in the seurat object with the hgnc gene symbol
-  rownames(sample_ID_srt@assays[["RNA"]]@counts) <- ENSG_gname38$gene_name[as.double(pmatch_output$match_index)]
+  print("Replacing ENSG names with corresponding HGNC gene symbols")
+  rownames(sample_ID_srt@assays[["RNA"]]@counts) <- ensg_gname$gene_name[as.numeric(pmatch_output$match_index)]
+  rownames(sample_ID_srt@assays[["RNA"]]@data) <- ensg_gname$gene_name[as.numeric(pmatch_output$match_index)]
   # Return the Seurat object with hgnc symbols as rownames
   return(sample_ID_srt)
 }
@@ -104,7 +103,7 @@ ensg_to_hgnc <- function(
 read_check_srt <- function(
   seurat_object,
   sample_ID,
-  ENSG_gname38_path = "working_directory"
+  ensg_gname_path
 ){
   # Read in the saved seurat object
   if (endsWith(seurat_object, ".rds") == TRUE | endsWith(seurat_object, "RDS") == TRUE) {
@@ -116,7 +115,7 @@ read_check_srt <- function(
   sample_ID_srt <- UpdateSeuratObject(sample_ID_srt)
   # Check if rownames use hgnc symbols or ENSEMBL IDs - change to hgnc symbol if ENSEMBL IDs are used
   if (startsWith(rownames(sample_ID_srt@assays[["RNA"]]@counts)[1], "ENSG") == TRUE) {
-    sample_ID_srt <- ensg_to_hgnc(ENSG_gname38_path, seurat_object, sample_ID)
+    sample_ID_srt <- ensg_to_hgnc(ensg_gname_path, seurat_object, sample_ID)
   }
   # Remove cell barcodes with counts of 0
   sample_ID_srt <- subset(sample_ID_srt, subset = nCount_RNA > 0)
@@ -127,6 +126,42 @@ read_check_srt <- function(
     sample_ID_srt[['mito.percent']] <- PercentageFeatureSet(sample_ID_srt, pattern = '^MT-')
   }
   return(sample_ID_srt)
+}
+
+######################################################################
+# Convert information from the Seurat object into a mtx count matrix
+######################################################################
+srt_count_mtx <- function(
+  read_in_seurat_object,
+  sample_ID,
+  output_folder
+){
+  print("Converting Seurat Object to an mtx matrix")
+  sample_ID_srt <- read_in_seurat_object
+  sample_ID_sparse <- as.sparse(GetAssayData(sample_ID_srt, slot = 'counts'))
+  writeMM(sample_ID_sparse, sprintf('%s/%s_normalised_matrix_output/matrix.mtx', output_folder, sample_ID))
+  sample_ID_sparse_rows <- rownames(sample_ID_sparse)
+  sample_ID_sparse_cols <- colnames(sample_ID_sparse)
+  write.table(sample_ID_sparse_rows, file = sprintf('%s/%s_normalised_matrix_output/genes.tsv', output_folder, sample_ID), row.names = FALSE, col.names = FALSE, quote = FALSE)
+  write.table(sample_ID_sparse_cols, file = sprintf('%s/%s_normalised_matrix_output/barcodes.tsv', output_folder, sample_ID), row.names = FALSE, col.names = FALSE, quote = FALSE)
+}
+
+######################################################################
+# Convert information from the Seurat object into a mtx log count matrix
+######################################################################
+srt_log_mtx <- function(
+  read_in_seurat_object,
+  sample_ID,
+  output_folder
+){
+  print("Converting Seurat Object to an mtx matrix")
+  sample_ID_srt <-read_in_seurat_object
+  sample_ID_sparse <- as.sparse(GetAssayData(sample_ID_srt, slot = 'data'))
+  writeMM(sample_ID_sparse, sprintf('%s/%s_log_normalised_matrix_output/matrix.mtx', output_folder, sample_ID))
+  sample_ID_sparse_rows <- rownames(sample_ID_sparse)
+  sample_ID_sparse_cols <- colnames(sample_ID_sparse)
+  write.table(sample_ID_sparse_rows, file = sprintf('%s/%s_log_normalised_matrix_output/genes.tsv', output_folder, sample_ID), row.names = FALSE, col.names = FALSE, quote = FALSE)
+  write.table(sample_ID_sparse_cols, file = sprintf('%s/%s_log_normalised_matrix_output/barcodes.tsv', output_folder, sample_ID), row.names = FALSE, col.names = FALSE, quote = FALSE)
 }
 
 
@@ -147,14 +182,16 @@ args <- commandArgs(TRUE)
 # Define all variables from bash arguments
 seurat_object <- args[1]
 sample_ID <- args[2]
-output_directory <- args[3]
-ENSG_gname38_path <- args[4]
-is_add_args <- as.logical(args[5])
-data_type_information <- args[6]
-add_args_list <- args[7]
+output_directory_path <- args[3]
+ensg_name_path <- args[4]
+ouput_log_matrix <- as.logical(args[5])
+ouput_count_matrix <- as.logical(args[6])
+is_add_args <- as.logical(args[7])
+data_type_information <- args[8]
+add_args_list <- args[9]
 
 # Read in the filtered Seurat Object
-sample_ID_srt <- read_check_srt(seurat_object, sample_ID)
+sample_ID_srt <- read_check_srt(seurat_object, sample_ID, ensg_gname_path)
 
 # Check if there are any additional arguments to process
 if ( is_add_args == TRUE ) {
@@ -217,5 +254,21 @@ if ( is_add_args == TRUE ) {
 # Save the normalised Seurat object to rds file
 saveRDS(
   sample_ID_srt,
-  file = sprintf("%s/%s_normalised_seurat.rds", output_directory, sample_ID)
+  file = sprintf("%s/%s_normalised_seurat.rds", output_directory_path, sample_ID)
 )
+
+if ( ouput_log_matrix == TRUE ) {
+	srt_log_mtx(
+		sample_ID_srt,
+		sample_ID,
+		output_directory_path
+	)
+}
+
+if ( ouput_count_matrix == TRUE ) {
+	srt_count_mtx(
+		sample_ID_srt,
+		sample_ID,
+		output_directory_path
+	)
+}

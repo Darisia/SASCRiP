@@ -105,7 +105,7 @@ def qc(fastq_path, fastqc_output, fastqc_options_list):
     if check_fastqc.returncode != 0:
         print(check_fastqc.stderr)
 
-### Define the function -- loop -- that will loop the fastqc program
+### Define the function -- loop -- that will loop the fastqc program - fastqc needs to be installed
 def run_fastqc(fastq_input_list, fastqc_output_list, fastqc_options_list):
 
     '''
@@ -150,16 +150,15 @@ def run_fastqc(fastq_input_list, fastqc_output_list, fastqc_options_list):
 ####################################################################################################
 
 def edit_10xv1_fastq(
-    input_folder,
-    output_folder):
+    input_directories):
 
     '''
     Separates the RA fastq 10xv1 file into two separate files where one file contains the UMI sequences and the other contains the transcript sequences
 
     Parameters:
 
-    input_folder(list-str): Path to the directory containing the RA 10xv1 fastq files
-    output_folder(list-str): Path to the output directory where the new separated fastq files will be saved
+    input_directories(list-str): Path to the directory/s containing the RA 10xv1 fastq files
+    output_directories(list-str): Path to the output directory/s where the new separated fastq files will be saved
 
     '''
 
@@ -167,25 +166,27 @@ def edit_10xv1_fastq(
     # .. that start with read-RA and put those filenames into a list
     # .. with the containing folder
 
-    # Accounting for more than one folders
-    if type(input_folder) is list:
-        input_folder = input_folder
-    else:
-        input_folder = input_folder.split(sep = ",")
+    output_directories = input_directories
 
     # Accounting for more than one folders
-    if type(output_folder) is list:
-        output_folder = output_folder
+    if type(input_directories) is list:
+        input_directories = input_directories
     else:
-        output_folder = output_folder.split(sep = ",")
+        input_directories = input_directories.split(sep = ",")
+
+    # Accounting for more than one folders
+    if type(output_directories) is list:
+        output_directories = output_directories
+    else:
+        output_directories = output_directories.split(sep = ",")
 
 
     # Combine the input directory list and output directory list into a dictionary
-    input_folder.extend(output_folder)
-    for i in range(0, len(output_folder), 1):
-        x = i + len(output_folder)
-        if x < len(input_folder):
-            list_dict = {input_folder[i] : input_folder[i + len(output_folder)] for i in range(0, len(output_folder), 1)}
+    input_directories.extend(output_directories)
+    for i in range(0, len(output_directories), 1):
+        x = i + len(output_directories)
+        if x < len(input_directories):
+            list_dict = {input_directories[i] : input_directories[i + len(output_directories)] for i in range(0, len(output_directories), 1)}
 
 
     for fastq_input, fastq_output in list_dict.items():
@@ -350,7 +351,7 @@ def sort_fastq_files(
 # Defines the function to check if ERCCs are present within the dataset
 def check_ercc(
             ERCC_fasta,
-            all_out_path,
+            output_directory_path,
             list_of_fastqs,
             single_cell_technology,
             input_directory = False,
@@ -360,9 +361,9 @@ def check_ercc(
             transcript_bp='0'
 ):
     # Make the output directory if it does not already exist
-    gen_func.mkdirs(all_out_path)
+    gen_func.mkdirs(output_directory_path)
 
-    ercc_log_file = os.path.join(all_out_path, 'check_ercc.log')
+    ercc_log_file = os.path.join(output_directory_path, 'check_ercc.log')
 
     # Check if the fastq files need to be captured and sorted
     if input_directory is True:
@@ -375,8 +376,8 @@ def check_ercc(
         list_of_fastqs = sorted_fastqs_list
 
     # Create paths for all files and directories generated within this function
-    all_ERCC_out_path = os.path.join(all_out_path, 'ERCC_analysis')
-    ERCC_index_path = os.path.join(all_out_path, 'ERCC_index.idx')
+    all_ERCC_out_path = os.path.join(output_directory_path, 'ERCC_analysis')
+    ERCC_index_path = os.path.join(output_directory_path, 'ERCC_index.idx')
     output_ERCC_busfile = os.path.join(all_ERCC_out_path, 'output.bus')
     ERCC_busfile_to_text = os.path.join(all_ERCC_out_path, 'ERCC_bus.txt')
 
@@ -406,12 +407,12 @@ def check_ercc(
 def kallisto_bustools_count(
                         list_of_fastqs,
                         single_cell_technology,
-                        all_out_path, # change to output_directory,
+                        output_directory_path,
+                        species_index,
+                        species_t2g,
                         input_directory = False,
                         read_separator = None,
                         generate_index = False,
-                        species_index = None,
-                        species_t2g = None,
                         species_fasta = None,
                         species_gtf = None,
                         k_mer_length = 31,
@@ -425,15 +426,13 @@ def kallisto_bustools_count(
                         memory = '4G'
 ):
     # Make the output directories if it does not exist
-    gen_func.mkdirs(all_out_path)
-
-    count_log_file = os.path.join(all_out_path, 'kb_count.log')
+    gen_func.mkdirs(output_directory_path)
 
     # Generate the Kallisto index and the transcript_to_index mapping file if generate_index is True
     if generate_index==True:
         # Create paths for kallisto index and gene mapping file
-        species_index = os.path.join(all_out_path, 'Kallisto_index.idx')
-        species_t2g = os.path.join(all_out_path, 'transcripts_to_genes.txt')
+        species_index = os.path.join(output_directory_path, 'Kallisto_index.idx')
+        species_t2g = os.path.join(output_directory_path, 'transcripts_to_genes.txt')
 
         # Generate the kallisto_index
         if k_mer_length!=31:
@@ -447,12 +446,6 @@ def kallisto_bustools_count(
         else:
             ref.create_t2g_from_gtf(species_gtf, species_t2g)
 
-    # If no index/fasta is given - as default, use GRCh kallisto index that I created w hile ago
-    if generate_index==False and species_index is None:
-        # set species_index to the saved index and species_t2g to the saved gene mapping file
-        species_index = './kallisto_index.idx'
-        species_t2g = './transcript_to_genes.txt'
-
     # Check if the fastq files need to be captured and sorted
     if input_directory is True:
         sorted_fastqs_list = sort_fastq_files(
@@ -464,7 +457,7 @@ def kallisto_bustools_count(
         list_of_fastqs = sorted_fastqs_list
 
     # Create paths for all the other files and directories generated within this function
-    all_count_out_path = os.path.join(all_out_path, 'Count_analysis')
+    all_count_out_path = os.path.join(output_directory_path, 'Count_analysis')
     unfiltered_count_folder_files = os.path.join(all_count_out_path, path_to_prefix_count_files)
     output_busfile = os.path.join(all_count_out_path, 'output.bus')
     sorted_busfile = os.path.join(all_count_out_path, 'sorted.bus')
@@ -520,14 +513,14 @@ def kallisto_bustools_count(
 def include_ERCC_bus_count(
                         list_of_fastqs,
                         single_cell_technology,
-                        all_out_path,
+                        output_directory_path,
                         ERCC_fasta,
+                        species_index,
+                        species_t2g,
                         species_fasta,
                         input_directory = False,
                         read_separator = None,
                         generate_index = False,
-                        species_index = None,
-                        species_t2g = None,
                         species_gtf = None,
                         k_mer_length = 31,
                         intron = False,
@@ -539,12 +532,12 @@ def include_ERCC_bus_count(
                         path_to_prefix_count_files='unfiltered_counts',
                         memory = '4G'
 ):
-    gen_func.mkdirs(all_out_path)
+    gen_func.mkdirs(output_directory_path)
 
     # Run the check_ercc function which returns a True or False
     is_ercc_included = check_ercc(
                             ERCC_fasta=ERCC_fasta,
-                            all_out_path=all_out_path,
+                            output_directory_path=output_directory_path,
                             list_of_fastqs=list_of_fastqs,
                             single_cell_technology=single_cell_technology,
                             input_directory = input_directory,
@@ -557,7 +550,7 @@ def include_ERCC_bus_count(
     if is_ercc_included == True:
 
         # Create paths for all the files and directories generated within this function
-        all_ERCC_out_path = os.path.join(all_out_path, 'ERCC_analysis')
+        all_ERCC_out_path = os.path.join(output_directory_path, 'ERCC_analysis')
         species_ERCC_fasta = os.path.join(all_ERCC_out_path, 'species_ERCC_fasta.fa.gz')
         ERCC_combined_index = os.path.join(all_ERCC_out_path, 'ERCC_combined_index.idx')
         ERCC_annotations = os.path.join(all_ERCC_out_path, 'ERCC_annotations.txt')
@@ -592,7 +585,7 @@ def include_ERCC_bus_count(
     kallisto_bustools_count(
                         list_of_fastqs = list_of_fastqs,
                         single_cell_technology = single_cell_technology,
-                        all_out_path = all_out_path,
+                        output_directory_path = output_directory_path,
                         input_directory = input_directory,
                         read_separator = read_separator,
                         generate_index = generate_index,
@@ -620,7 +613,7 @@ def seurat_matrix(
     bustools_mtx_matrix,
     bustools_gene_index,
     bustools_barcode_index,
-    output_directory
+    output_directory_path
 ):
 
     '''
@@ -631,7 +624,7 @@ def seurat_matrix(
 	bustools_gene_index(str): Path to the output bustools gene index file
     bustools_barcode_index(str): Path to the bustools barcodes file
 	transcripts_to_genes_file(str): Path to the transcripts to genes file
-	output_directory(str): Path to the output directory where the matrix files will be saved
+	output_directory_path(str): Path to the output directory where the matrix files will be saved
 
 	'''
 
@@ -639,16 +632,16 @@ def seurat_matrix(
 
     # Let's start by checking and/or creating the output directory
 	# .. That means we need the gen_func script
-    if output_directory=="working_directory":
-        output_directory = "./"
+    if output_directory_path=="working_directory":
+        output_directory_path = "./"
     else:
-        gen_func.mkdirs(output_directory)
+        gen_func.mkdirs(output_directory_path)
 
     ## First edit the gene index
     # Let's put together the bash command
     command = "sh ./bus2CR_features.sh {} {}".format(
 	bustools_gene_index,
-	output_directory)
+	output_directory_path)
 
 	# Run the bash command using subproces.run and save the standard output to check_process
     check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
@@ -663,7 +656,7 @@ def seurat_matrix(
     # put the bash command together
     command = "sh ./bus2CR_barcodes.sh {} {}".format(
         bustools_barcode_index,
-	output_directory)
+	output_directory_path)
 
     # Run the bash command using subprocess.run and save the standard output to check_process
     check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
@@ -676,7 +669,7 @@ def seurat_matrix(
 
     # Edit the mtx output matrix
     # put the bash command together
-    command = "sh ./bus2CR_matrix.sh {} {}".format(bustools_mtx_matrix, output_directory)
+    command = "sh ./bus2CR_matrix.sh {} {}".format(bustools_mtx_matrix, output_directory_path)
 
     # Run the bash command using subprocess.run and save the standard output to check_process
     check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
@@ -697,7 +690,7 @@ def seurat_matrix(
 ## Create the python function
 def run_cqc(input_file_or_folder,
             sample_ID,
-            output_folder = "working_directory",
+            output_directory_path = "working_directory",
             generate_seurat_object = True,
             subset_seurat_object = True,
             generate_default_plots = True,
@@ -720,12 +713,12 @@ def run_cqc(input_file_or_folder,
     Parameters:
     input_file_or_folder(str): Path to the folder containing the output matrix or path to the hdf5 file
     sample_ID(str): The name of the sample
-    output_folder(str): The path to the output directory where all output will be saved (default = working directory)
+    output_directory_path(str): The path to the output directory where all output will be saved (default = working directory)
     generate_seurat_object(bool): State whether to generate the Seurat object from output matrix (default = True)
     subset_seurat_object(bool): State whether to subset the Seurat object, removing cells identified as damaged/Multiplets (default = True)
     generate_default_plots(bool): State whether to generate all default visualisations (default = True)
     input_seurat_object(bool): State whether the input file is a saved seurat object (default = False)
-    ENSG_gname38_path(str): Path to the file called ENSG_gname38.tsv that will allow us to convert ENSG name into hgnc symbols
+    transcripts_to_genes_file(str): Path to the transcripts-to-genes mapping file that will allow ENSG gene names to be converted into corresponding HGNC gene symbols (within the seurat object) if required
     gene_lower(int/None): Minimum number of genes required (default = 200)
     gene_higher_method(str): One of three methods - MAD, SD, or Manual to identify outliers within the dataset
     gene_higher(int/None): If method selected as Manual - the maximum number of genes required should be given here
@@ -737,20 +730,20 @@ def run_cqc(input_file_or_folder,
 
     '''
     # Check if output folder is specified
-    if output_folder == "working_directory":
-        output_folder = "./"
+    if output_directory_path == "working_directory":
+        output_directory_path = "./"
     else:
-        output_folder = output_folder
+        output_directory_path = output_directory_path
 
     # Edit directory paths
-    if output_folder.endswith('/'):
-        output_folder = os.path.dirname(output_folder)
+    if output_directory_path.endswith('/'):
+        output_directory_path = os.path.dirname(output_directory_path)
     else:
-        output_folder = output_folder
+        output_directory_path = output_directory_path
 
     # Generate the directories if it does not already exist
-    if output_folder != "working_directory":
-        gen_func.mkdirs(output_folder)
+    if output_directory_path != "working_directory":
+        gen_func.mkdirs(output_directory_path)
 
     # Convert the None inputs to a string to be input into bash
     if gene_lower is None:
@@ -762,10 +755,8 @@ def run_cqc(input_file_or_folder,
 
     # Generate the directory where the output mtx matrix would be saved
     if output_matrix == True:
-        output_matrix_dir = os.path.join(output_folder, sample_ID + '_QC_matrix_output')
+        output_matrix_dir = os.path.join(output_directory_path, sample_ID + '_QC_matrix_output')
         gen_func.mkdirs(output_matrix_dir)
-
-
 
     # Set Seurat object if the seurat object was given instead of the output matrix
     if input_seurat_object is True:
@@ -808,7 +799,7 @@ def run_cqc(input_file_or_folder,
     if transcripts_to_genes_file != None:
         command = 'sh cut_t2g.sh {} {}'.format(
         transcripts_to_genes_file,
-        output_folder
+        output_directory_path
         )
 
         check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
@@ -821,7 +812,7 @@ def run_cqc(input_file_or_folder,
         # Print all standard output to log file
         logger.info(check_process.stdout.decode())
 
-        ensg_gname_path = os.path.join(output_folder, "ensg_gname.tsv")
+        ensg_gname_path = os.path.join(output_directory_path, "ensg_gname.tsv")
     else:
         logger.warning("No transcripts_to_genes_file given. If ESEMBL gene names are used, a Seurat object cannot be properly generated and an error will be returned")
         ensg_gname_path = "None"
@@ -831,7 +822,7 @@ def run_cqc(input_file_or_folder,
     command = 'Rscript cqc_srt.R {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(
     input_file_or_folder,
     sample_ID,
-    output_folder,
+    output_directory_path,
     generate_seurat_object,
     subset_seurat_object,
     generate_default_plots,
@@ -880,10 +871,10 @@ def run_cqc(input_file_or_folder,
 def sctransform_normalize(
 	seurat_object,
 	sample_ID,
-	output_directory = "working_directory",
+	output_directory_path = "working_directory",
     ouput_log_matrix = False,
     output_count_matrix = False,
-	ENSG_gname38_path = "working_directory",
+	transcrirpts_to_genes_file = None,
 	**additional_sctransform_arguments): # Don't forget that there were some issues with this
 
 	'''
@@ -892,23 +883,49 @@ def sctransform_normalize(
 	Parameters:
 	seurat_object(str): Path to the saved seurat object
 	sample_ID(str): Name of the sample
-	output_directory(str): Path to the output directory where all generated files and folders will be saved
+	output_directory_path(str): Path to the output directory where all generated files and folders will be saved
 	ENSG_gname38_path(str): Path to the file called ENSG_gname38.tsv that will allow us to convert ENSG name into hgnc symbols
 	**additional_sctransform_arguments: additional arguements (with key words) will be passed to Seurat's SCTransform function
 
 	'''
 
 	# Sort out the output directory
-	if output_directory == "working_directory":
-		output_directory = "./"
+	if output_directory_path == "working_directory":
+		output_directory_path = "./"
 	else:
-		gen_func.mkdirs(output_directory)
+		gen_func.mkdirs(output_directory_path)
 
-	# Sort out the ENSG_gname38_path path
-	if ENSG_gname38_path == "working_directory":
-		ENSG_gname38_path = "./"
-	else:
-		ENSG_gname38_path = ENSG_gname38_path
+    # Generate the directory where the output log mtx matrix would be saved
+    if output_log_matrix == True:
+        output_matrix_dir = os.path.join(output_directory_path, sample_ID + '_log_normalised_matrix')
+        gen_func.mkdirs(output_matrix_dir)
+
+    # Generate the directory where the output count mtx matrix would be saved
+    if output_log_matrix == True:
+        output_matrix_dir = os.path.join(output_directory_path, sample_ID + '_normalised_matrix')
+        gen_func.mkdirs(output_matrix_dir)
+
+    # if transcripts_to_genes supplied - create ensg_gname
+    if transcripts_to_genes_file != None:
+        command = 'sh cut_t2g.sh {} {}'.format(
+        transcripts_to_genes_file,
+        output_directory_path
+        )
+
+        check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+
+        # check to see if that variable has a returncode above 0 - if it does, print the error message
+        if check_process.returncode != 0:
+            print(check_process.stderr.decode())
+            print(check_process.stdout.decode())
+
+        # Print all standard output to log file
+        logger.info(check_process.stdout.decode())
+
+        ensg_gname_path = os.path.join(output_directory_path, "ensg_gname.tsv")
+    else:
+        logger.warning("No transcripts_to_genes_file given. If ESEMBL gene names are used, a Seurat object cannot be properly generated and an error will be returned")
+        ensg_gname_path = "None"
 
 	# Create list of values from the additional argument dictionary
 	# .. if there is additional arguments - should test first
@@ -956,7 +973,7 @@ def sctransform_normalize(
 	# all variables for the bash code
 	# 1) path to seurat object
 	# 2) sample_ID
-	# 3) output_directory
+	# 3) output_directory_path
 	# 4) ENSG_gname_path
 	# 5) cell_cycle_normalisation
 	# 6) is_add_args
@@ -964,11 +981,13 @@ def sctransform_normalize(
 	# 8) add_args_list
 
 	# let's put together the bash code
-	command = "Rscript ./normalise_seurat.R {} {} {} {} {} {} {}".format(
+	command = "Rscript ./normalise_seurat.R {} {} {} {} {} {} {} {} {}".format(
 		seurat_object,
 		sample_ID,
-		output_directory,
-		ENSG_gname38_path,
+		output_directory_path,
+		ensg_gname_path,
+        output_log_matrix,
+        output_count_matrix,
 		is_add_args,
 		data_type_information,
 		add_args_list)
@@ -989,14 +1008,16 @@ def sctransform_normalize(
 # Run with default parameters otherwise use the dictionary keyword option
 
 def sascrip_preprocess(
-    output_directory, # Remember to change this in other sripts and functions too
+    output_directory_path,
     sample_ID,
     list_of_fastqs,
     single_cell_technology,
     species_index,
     species_t2g,
+    input_directory = False,
+    read_separator = None,
     filter = True,
-    include_checkpoints = True,
+    include_checkpoints = False,
     kallisto_bustools_count_parameters = None, # Dictionary - use as indicated in documentation # NB for 10xv1 data
     run_cqc_parameters = None, # Dictionary - use as indicated in documentation
     additional_sctransform_arguments = None # Dictionary - use as indicated in documentaion
@@ -1005,21 +1026,27 @@ def sascrip_preprocess(
     # Import the required packages
     import sascrip_functions
 
+    # Check if statements should be printed to std output
+    if include_checkpoints is True:
+        logger.addHandler(stream_handler)
+
     # First we need to break down the steps
     # Step one: Run kallisto_bustools_count to generate the unfiltered and filtered gene count matrix
     gen_files = sascrip_functions.kallisto_bustools_count(
         list_of_fastqs = list_of_fastqs,
         single_cell_technology = single_cell_technology,
-        all_out_path = output_directory,
+        output_directory_path = output_directory_path,
         species_index = species_index,
         species_t2g = species_t2g,
+        input_directory = input_directory,
+        read_separator = read_separator,
         filter = filter,
         **kallisto_bustools_count_parameters
         )
 
     # Step two would be to edit the bus matrix and get it ready for input into Seurat
     ## First we need to set the paths to the generated matrix and features file
-    all_count_out_path = os.path.join(all_out_path, "Count_analysis")
+    all_count_out_path = os.path.join(output_directory_path, "Count_analysis")
     unfiltered_path = os.path.join(all_count_out_path, "unfiltered_counts")
     filtered_path = os.path.join(all_count_out_path, "filtered_counts")
     unfiltered_mtx_matrix = os.path.join(unfiltered_path, "unfiltered_counts.mtx")
@@ -1054,7 +1081,7 @@ def sascrip_preprocess(
 
     # now we need to run the "run_cqc" function
     # Create new folder for quality control stuff
-    cell_quality_control_folder = os.path.join(all_out_path, "Cell_quality_control_analysis")
+    cell_quality_control_folder = os.path.join(output_directory_path, "Cell_quality_control_analysis")
     mkdirs(cell_quality_control_folder)
 
     # Call the function
@@ -1072,12 +1099,12 @@ def sascrip_preprocess(
 
     # Now it's time to run the normalization function
     # First create the directory to store this stuff
-    normalized_folder = os.path.join(all_out_path, "sctransform_normalized")
+    normalized_folder = os.path.join(output_directory_path, "sctransform_normalized")
     mkdirs(normalized_folder)
     # Call the function
     sctransform_normalize(
     seurat_object = subset_seurat,
     sample_ID = sample_ID,
-    output_directory = normalized_folder,
+    output_directory_path = normalized_folder,
     **additional_sctransform_arguments
     )
