@@ -50,9 +50,9 @@ pip install sascrip
 
 ## SASCRiP functions: User guide
 
-## install_R_packages
+## `install_R_packages`
 
-This functions allows the user to install missing R packages that are required for SASCRiP to work. install_R_packages first checks if the package is installed and if not, install.packages() is run.
+This function allows the user to install missing R packages that are required for SASCRiP to work. `install_R_packages` first checks if the package is installed and if not, install.packages() is run.
 
 #### Usage
 
@@ -64,7 +64,7 @@ sascrip_functions.install_R_packages()
 
 ````  
 
-## edit_10xv1_fastq
+## `edit_10xv1_fastq`
 
 `edit_10xv1_fastq` prepares FastQ files, obtained using the 10xv1 sequencing chemistry, for input into Kallisto for pseudoalignment. The directory/s containing the FastQ files are input into `edit_10xv1_fastq` which searches for the RA FastQ file that contains both the UMI and transcript sequence. The UMI and Transcript sequences are separated into their own FastQ files. The directory/s containing all these FastQ files can be input into kallisto_bustools_count for further processing. The produced FastQ files will be saved in the same directory containing all the input FastQ files.
 
@@ -89,7 +89,7 @@ input_directories (str-list): Path to the directory/s containing the RA 10xv1 Fa
 
 ## `check_ercc`
 
-`check_ercc` allows the user to check if the single-cell dataset may contain RNA spike-ins that can be used as an additional cell-quality control metric. If check_ercc is run, True or False - depending on whether ERCCs are included or not, will be returned as standard output 
+`check_ercc` allows the user to check if the single-cell dataset may contain RNA spike-ins that can be used as an additional cell-quality control metric. If `check_ercc is run`, True or False - depending on whether ERCCs are included or not, will be returned as standard output 
 
 #### Usage
 
@@ -178,9 +178,9 @@ read_separator = ["R1", "R2"]
 
 ```
 
-## kallisto_bustools_count
+## `kallisto_bustools_count`
 
-Runs both Kallisto and Bustools through kb-python to perform pseudoalignment and gene quantification respectively. kallisto_bustools_count generates unfiltered and filtered count matrices for the single-cell dataset of interest
+Runs both Kallisto and Bustools through kb-python to perform pseudoalignment and gene quantification respectively. `kallisto_bustools_count` generates unfiltered and filtered count matrices for the single-cell dataset of interest
 
 #### Usage
 
@@ -191,10 +191,12 @@ from sascrip import sascrip_functions
 sascrip_functions.kallisto_bustools_count(
      list_of_fastqs,
      single_cell_technology,
-     all_out_path,
+     output_directory_path,
+     species_index,
+     species_t2g,
+     input_directory = False,
+     read_separator = None,
      generate_index = False,
-     species_index = None,
-     species_t2g = None,
      species_fasta = None,
      species_gtf = None,
      k_mer_length = 31,
@@ -211,25 +213,31 @@ sascrip_functions.kallisto_bustools_count(
 ````
 #### Parameters
 
-````
+```
+
+
 Required parameters
 ___________________
 
-list_of_fastqs (str-list):         Python list of the paths to input FastQ files in the *order specified by Kallisto
+list_of_fastqs (str-list):         Python list of the paths to input FastQ files in the *order specified by Kallisto. The folder containing all the input files can be given instead and the relevant FastQ files will be captured and sorted in the correct order. To use this feature - input the path to the directory here (If multiple directories are used, input all the directories as a list), set input_directory = True and provide the strings used to separate the reads in the read_separator parameter. * See example above (working with more than one set of FastQ files)
 
 single_cell_technology (str):      The single-cell sequencing technology that was used as *specified by Kallisto. If 10xv1 technology was used, the UMI_bp and barcode_bp parameters are required
 
-all_out_path (str):                Path to the main output directory where all files and new directories will be created and saved
+output_directory_path (str):       Path to the main output directory where all files and new directories will be created and saved
+
+species_index (str):               Path to the kallisto_index for the species of interest. If the Kallisto index needs to be generated, set species_index = None, generate_index = True and species_fasta = "path/to/cDNA FASTA".
+
+species_t2g (str):                 Path to the transcript-to-genes mapping file for the species of interest. If the transcripts-to-genes mapping file needs to be generated, set species_t2g = None, generate_index = True and species_gtf = "path/to/GTF file".
 
 
 Optional parameters
 ___________________
 
+input_directory (bool):            Indicate whether the list_of_fastqs parameter is given the path to the directory containing all input FastQ files * See example above (working with more than one set of FastQ files)
+
+read_separator (str-list):         The strings used to separate the input reads. Within a list - the first element should contain the string used to identify read 1, the second element should contain the string used to identify read 2 and if "10xv1" FastQ files are used, a third element is required that contains the string used to identify read 3. * See example above (working with more than one set of FastQ files)
+
 generate_index (bool):             Indicate whether the Kallisto Index should be generated within the function. If set to True: the species_fasta and the species_gtf are required
-
-species_index (str):               Path to the kallisto_index for the species of interest. If no index is given, the default Kallisto index created using the GRCh 38 transcriptome assembly will be used.
-
-species_t2g (str):                 Path to the transcript-to-genes mapping file for the species of interest. If no mapping file is given, the default file created using the GRCh 38 GTF file will be used.
 
 species_fasta (str):               Path to the transcriptome (cDNA) FASTA file for the species of interest. This will be used to generate the Kallisto index. If generate_index is set to True, this parameter is required.
 
@@ -253,7 +261,9 @@ path_to_prefix_count_files (str):  Prefix of the output matrix files and indices
 
 memory (str):                      Amount of memory to use 
 
-```` 
+```
+
+
 * **Kallisto specified FastQ file order and single-cell technologies**
 
 Please see table above
@@ -263,9 +273,9 @@ Please see table above
 Please see description above
 
 
-## include_ERCC_bus_count
+## `include_ERCC_bus_count`
 
-`include_ERCC_bus_count` first checks if ERCC spike-ins are included in the dataset and generates counts with kallisto_bustools_count accordingly. To check if spike-ins are present, a Kallisto index is generated from the ERCC FASTA and the FastQ sequences from the dataset are aligned to the ERCC index. if no sequences align to the ERCC index, the gene-count matrix will be generated without including ERCC sequences. However, if there are seqeunces that align to the ERCC index, the ERCC FASTA seqeunce and the species FASTA sequence will be combined to create a new kallisto index. Therefore, the final gene-count matrix will include ERCC sequences.
+`include_ERCC_bus_count` first checks if ERCC spike-ins are included in the dataset and generates counts with `kallisto_bustools_count` accordingly. To check if spike-ins are present, a Kallisto index is generated from the ERCC FASTA and the FastQ sequences from the dataset are aligned to the ERCC index. if no sequences align to the ERCC index, the gene-count matrix will be generated without including ERCC sequences. However, if there are seqeunces that align to the ERCC index, the ERCC FASTA seqeunce and the species FASTA sequence will be combined to create a new kallisto index. Therefore, the final gene-count matrix will include ERCC sequences.
 
 #### Usage
 
@@ -276,12 +286,14 @@ from sascrip import sascrip_functions
 sascrip_functions.include_ERCC_bus_count(
      list_of_fastqs,
      single_cell_technology,
-     all_out_path,
+     output_directory_path,
      ERCC_fasta,
+     species_index,
+     species_t2g,
      species_fasta,
+     input_directory = False,
+     read_separator = None,
      generate_index = False,
-     species_index = None,
-     species_t2g = None,
      species_gtf = None,
      k_mer_length = 31,
      intron = False,
@@ -301,27 +313,29 @@ sascrip_functions.include_ERCC_bus_count(
 Required parameters
 ___________________
 
-list_of_fastqs (str-list):         Python list of the paths to input FastQ files in the *order specified by Kallisto
+list_of_fastqs (str-list):         Python list of the paths to input FastQ files in the *order specified by Kallisto. The folder containing all the input files can be given instead and the relevant FastQ files will be captured and sorted in the correct order. To use this feature - input the path to the directory here (If multiple directories are used, input all the directories as a list), set input_directory = True and provide the strings used to separate the reads in the read_separator parameter. * See example above (working with more than one set of FastQ files)
 
 single_cell_technology (str):      The single-cell sequencing technology that was used as *specified by Kallisto. If 10xv1 technology was used, the UMI_bp and barcode_bp parameters are required
 
-all_out_path (str):                Path to the main output directory where all files and new directories will be created and saved
+output_directory_path (str):       Path to the main output directory where all files and new directories will be created and saved
 
 ERCC_fasta (str):                  Path to the ERCC FASTA file
 
-species_fasta (str):               Path to the transcriptome (cDNA) FASTA file for the species of interest
+species_index (str):               Path to the kallisto_index for the species of interest. If the Kallisto index needs to be generated, set species_index = None, generate_index = True and species_fasta = "path/to/cDNA FASTA".
+
+species_t2g (str):                 Path to the transcript-to-genes mapping file for the species of interest. If the transcripts-to-genes mapping file needs to be generated, set species_t2g = None, generate_index = True and species_gtf = "path/to/GTF file".
+
+species_fasta (str):               Path to the transcriptome (cDNA) FASTA file for the species of interest. This will be required if ERCCs are included in the dataset
 
 
 Optional parameters
 ___________________
 
+input_directory (bool):            Indicate whether the list_of_fastqs parameter is given the path to the directory containing all input FastQ files * See example above (working with more than one set of FastQ files)
+
+read_separator (str-list):         The strings used to separate the input reads. Within a list - the first element should contain the string used to identify read 1, the second element should contain the string used to identify read 2 and if "10xv1" FastQ files are used, a third element is required that contains the string used to identify read 3. * See example above (working with more than one set of FastQ files)
+
 generate_index (bool):             Indicate whether the Kallisto Index should be generated within the function. If set to True: the species_fasta and the species_gtf are required
-
-species_index (str):               Path to the kallisto_index for the species of interest. If no index is given, the default Kallisto index created using the GRCh 38 transcriptome assembly will be used.
-
-species_t2g (str):                 Path to the transcript-to-genes mapping file for the species of interest. If no mapping file is given, the default file created using the GRCh 38 GTF file will be used.
-
-
 
 species_gtf (str):                 Path to the GTF file for the species of interest. This will be used to create the transcripts-to-genes mapping file. If generate_index is set to True, this parameter is required.
 
@@ -353,9 +367,9 @@ Please see table above
 
 Please see description above
 
-## seurat_matrix
+## `seurat_matrix`
 
-This SASCRiP function is designed to convert the output mtx matrix from kallisto_bustools_count or include_ERCC_bus_count to a gene-count matrix that is supported by Seurat. To do this, seurat_matrix transposes the bustools matrix so that genes and cells are represented in rows and columns respectively. Additionally, the ENSG gene names are converted to the corresponding HGNC gene symbols using the transcript-to-genes mapping file. Finally, all three files (mtx matrix, gene index file, and barcode index file) are renamed and compressed. 
+This SASCRiP function is designed to convert the output mtx matrix from `kallisto_bustools_count` or `include_ERCC_bus_count` to a gene-count matrix that is supported by Seurat. To do this, seurat_matrix transposes the bustools matrix so that genes and cells are represented in rows and columns respectively. Finally, all three files (mtx matrix, gene index file, and barcode index file) are renamed and compressed. 
 
 #### Usage
 
@@ -367,7 +381,7 @@ sascrip_functions.seurat_matrix(
      bustools_mtx_matrix,
      bustools_gene_index,
      bustools_barcode_index,
-     output_directory
+     output_directory_path
 )
 
 ````
@@ -383,15 +397,15 @@ bustools_gene_index (str):         Path to the output BUStools gene index file
 
 bustools_barcode_index (str):      Path to the BUStools barcode index file
 
-output_directory (str):            Path to the output directory where the new matrix files will be saved
+output_directory_path (str):       Path to the output directory where the new matrix files will be saved
 
 ```` 
 
 
 
-## run_cqc
+## `run_cqc`
 
-This is the main cell quality control function. run_cqc runs Seurat functions on the input Seurat-compatible mtx matrix and performs cell quality control through the use of filtering thresholds. Multiple parameters are included within this function to allow for many different types of inputs and outputs for integration with many other single-cell analysis tools
+This is the main cell quality control function. `run_cqc` runs Seurat functions on the input Seurat-compatible mtx matrix and performs cell quality control through the use of filtering thresholds. Multiple parameters are included within this function to allow for many different types of inputs and outputs for integration with many other single-cell analysis tools
 
 #### Usage
 
@@ -402,13 +416,13 @@ from sascrip import sascrip_functions
 sascrip_functions.run_cqc(
      input_file_or_folder,
      sample_ID,
-     output_directory = "working_directory,
+     output_directory_path = "working_directory,
      generate_seurat_object = True,
      subset_seurat_object = True,
      generate_default_plots = True,
      gene_column = 1,
      input_seurat_object = False,
-     ENSG_gname38_path = "working_directory",
+     transcripts_to_genes_file = None,
      gene_lower = 200,
      gene_higher_method = "MAD",
      gene_higher = "to_be_calculated",
@@ -435,7 +449,7 @@ sample_ID (str):                   The name of the sample
 Optional parameters
 ___________________
 
-output_directory (str):             The path to the output directory where all output files and directories will be created and saved
+output_directory_path (str):        The path to the output directory where all output files and directories will be created and saved
 
 generate_seurat_object (bool):      Indicate whether a seurat object should be generated from the input mtx matrix. If a Seurat object is input in the input_file_or_folder parameter, this parameter is required to be set to False. If a gene count matrix is input, this parameters is required to be set to True.
 
@@ -447,7 +461,7 @@ gene_column (int):                  The column number in the genes index file th
 
 input_seurat_object (bool):         Indicate whether the input_file_or_folder parameter contains the path to a saved Seurat object. If so, this parameter should be set to True
 
-ENSG_gname38_path (str):            Path to the file that will allow us to convert ENSG gene names to HGNC gene symbols (within the seurat object) if required
+transcripts_to_genes_files (str):   Path to the transcripts-to-genes mapping file that will allow ENSG gene names to be converted into corresponding HGNC gene symbols (within the seurat object) if required
 
 gene_lower (int/None):              Minimum number of genes that should be detected in healthy cells. If this cell metric should not be used to identify low-quality cells then gene_lower should be set to None. However, if this parameter is set to None and generate_default_plots is set to True, a warning will be returned as the visualisations that use this threshold cannot be generated.
 
@@ -467,9 +481,9 @@ output_matrix (bool):              Indicate whether to generate an mtx matrix fi
 
 ```` 
 
-## stransform_normalize
+## `stransform_normalize`
 
-sctransform_normalize takes the raw UMI counts from healthy single cells (stored within a seurat object) and generates gene expression values using sctransform through Seurat. A saved Seurat object containing log normalised expression values as well as corrected counts. Additionally, the top 2000 highly variable genes are returned. This information is required for downstream analysis such as clustering or data integration. 
+`sctransform_normalize` takes the raw UMI counts from healthy single cells (stored within a seurat object) and generates gene expression values using sctransform through Seurat. A saved Seurat object containing log normalised expression values as well as corrected counts. Additionally, the top 2000 highly variable genes are returned. This information is required for downstream analysis such as clustering or data integration. 
 
 #### Usage
 
@@ -480,10 +494,10 @@ from sascrip import sascrip_functions
 sascrip_functions.sctransform_normalize(
      seurat_object,
      sample_ID,
-     output_directory = "working_directory,
+     output_directory_path = "working_directory,
      output_log_matrix = False,
      output_count_matrix = False,
-     ENSG_gname38_path = "working_directory",
+     transcripts_to_genes_file = None,
      **additional_sctransform_arguments
 )
 
@@ -502,13 +516,13 @@ sample_ID (str):                   Name of sample
 Optional parameters
 --------------------
 
-output_directory (str):            Path to the output directory where all generated files and dircetories will be saved
+output_directory_path (str):       Path to the output directory where all generated files and dircetories will be saved
 
-output_log_matrix (str):           Indicate whether to additionally store the gene expression values per cell in an mtx matrix
+output_log_matrix (bool):          Indicate whether to additionally store the gene expression values per cell in an mtx matrix
 
-output_count_matrix (str):         Indicate whether to additionally store the corrected UMI counts in an mtx matrix
+output_count_matrix (bool):        Indicate whether to additionally store the corrected UMI counts in an mtx matrix
 
-ENSG_gname38_path (str):           Path to the file that will allow the conversion of ENSG gene names to HGNC gene symbols (within the seurat object) if required
+transcripts_to_genes_files (str):  Path to the transcripts-to-genes mapping file that will allow ENSG gene names to be converted into corresponding HGNC gene symbols (within the seurat object) if required
 
 **additional_sctransform_arguments (dict):  Additional parameters (with key words) that should be passed to Seurat's SCTransform function - which additionally passes the parameters to the original stransform::vst function. In order to use parameter - the additional parameters to be passed should be in the form of a python dictionary where the key word is the parameter name (str) and the value is the given parameter value (in it's correct data type) - *see example below
 
@@ -534,9 +548,9 @@ sascrip_functions.sctransform_normalize(
 ```
 
 
-## sascrip_preprocess
+## `sascrip_preprocess`
 
-sascrip_preprocess allows the user to run the entire single-cell RNA sequencing data pre-processing steps with one function. The sascrip_preprocess parameters can be customised to adjust the default settings. 
+`sascrip_preprocess` allows the user to run the entire single-cell RNA sequencing data pre-processing steps with one function. The sascrip_preprocess parameters can be customised to adjust the default settings. 
 
 #### Usage
 
@@ -545,13 +559,16 @@ import sascrip
 from sascrip import sascrip_functions
 
 sascrip_functions.sascrip_preprocess(
-     output_directory,
+     output_directory_path,
      sample_ID,
      list_of_fastqs,
      single_cell_technology,
      species_index,
      species_t2g,
+     input_directory = False,
+     read_separator = None,
      filter = True,
+     include_checkpoints = False,
      kallisto_bustools_count_parameters = None,
      run_cqc_parameters = None,
      additional_sctransform_arguments None
@@ -568,7 +585,7 @@ output_directory (str):                    Path to the output directory where ou
 
 sample_ID (str):                           Name of the sample
 
-list_of_fastqs (str-list):                 Python list of the paths to input FastQ files in the *order specified by Kallisto
+list_of_fastqs (str-list):                 Python list of the paths to input FastQ files in the *order specified by Kallisto. The folder containing all the input files can be given instead and the relevant FastQ files will be captured and sorted in the correct order. To use this feature - input the path to the directory here (If multiple directories are used, input all the directories as a list), set input_directory = True and provide the strings used to separate the reads in the read_separator parameter. * See example above (working with more than one set of FastQ files)
 
 single_cell_technology (str):              The single-cell sequencing technology that was used as *specified by Kallisto. If 10xv1 technology was used, the UMI_bp and barcode_bp parameters are required
 
@@ -578,6 +595,10 @@ species_t2g (str):                         Path to the transcript-to-genes mappi
 
 Optional parameters
 ___________________
+
+input_directory (bool):                    Indicate whether the list_of_fastqs parameter is given the path to the directory containing all input FastQ files * See example above (working with more than one set of FastQ files)
+
+read_separator (str-list):                 The strings used to separate the input reads. Within a list - the first element should contain the string used to identify read 1, the second element should contain the string used to identify read 2 and if "10xv1" FastQ files are used, a third element is required that contains the string used to identify read 3. * See example above (working with more than one set of FastQ files)
 
 filter (bool):                             Indicate whether to filter the BUS file prior to generating the count matrix
 
