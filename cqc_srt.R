@@ -308,12 +308,14 @@ damaged_scatter <- function(
   colnames(sample_ID_preQC_df) <- c("gene_count", "UMI_count", "mito_percent")
 
   # Add another column deciding whether to keep or Remove cells based on mt percentage
+  mitochondria_percent <- as.double(mitochondria_percent)
   sample_ID_preQC_df$mito_filt <- ifelse(sample_ID_preQC_df$mito_percent>mitochondria_percent, "Remove", "Keep")
 
   # Arrange the mito_filt column where Keep cells are first and Remove cells are after
   sample_ID_preQC_df <- arrange(sample_ID_preQC_df, mito_filt)
 
   # Create the plot to flag gene counts below 200
+  gene_lower <- as.double(gene_lower)
   sample_ID_preQC_scat <- ggplot(sample_ID_preQC_df, aes(x = gene_count,
                                                    y = UMI_count)) +
   geom_point(aes(colour = ifelse(gene_count <= gene_lower, "Remove", "Keep" ))) +
@@ -423,6 +425,9 @@ doublet_plots <- function(
       nSD
     )
   }
+  else {
+          gene_higher <- as.double(gene_higher)
+  }
 
   # Extract plotting information and create data frame
   sample_ID_preQC_df <- data.frame(sample_ID_srt@meta.data$nFeature_RNA,
@@ -434,10 +439,12 @@ doublet_plots <- function(
 
   # Create new dataframe where all "damaged" cells are removed if thresholds are given
   if (gene_lower != "None"){
+    gene_lower <- as.double(gene_lower)
     sample_ID_preQC_df <- sample_ID_preQC_df %>%
       filter(gene_count>gene_lower)
   }
   if (mitochondria_percent != "None"){
+    mitochondria_percent <- as.double(mitochondria_percent)
     sample_ID_preQC_df <- sample_ID_preQC_df %>%
       filter(mito_percent<mitochondria_percent)
   }
@@ -793,18 +800,21 @@ extract_metrics <- function(
 
   # Use lower gene count threshold to classify cells as damaged
   if (gene_lower != "None"){
+    gene_lower <- as.numeric(gene_lower)
     sample_ID_preQC_df$lower_threshold <- ifelse(gene_count<gene_lower,
                                                   "Damaged",
                                                   "Healthy")
   }
   # Use mitochondrial percentage threshold to classify cells as damaged
   if (mitochondria_percent != "None"){
+    mitochondria_percent <- as.numeric(mitochondria_percent)
     sample_ID_preQC_df$mitochondria_threshold <- ifelse(mito_percent>mitochondria_percent,
                                                         "Damaged",
                                                         "Healthy")
   }
   # Add a column to the new dataframe that classifies cells as outliers
   if (gene_higher != "None"){
+    gene_higher <- as.numeric(gene_higher)
     sample_ID_preQC_df$outlier_class <- ifelse(sample_ID_preQC_df$gene_count>gene_higher,
                                                   "Multiplet",
                                                   "Singlet")
