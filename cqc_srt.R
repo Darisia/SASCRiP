@@ -361,7 +361,8 @@ damaged_scatter <- function(
                y = mito_percent,
                colour = mito_filt)) +
    geom_point() +
-   scale_colour_manual(values = c("blue", "#ff7f00")) +
+   scale_colour_manual(values = c("blue", "#ff7f00"),
+                        labels = c("Healthy", "Low-quality")) +
   labs(x = "Total number of unique genes detected",
        y = "Percentage of mitochondrial genes detected",
        colour = "") +
@@ -801,14 +802,14 @@ extract_metrics <- function(
   # Use lower gene count threshold to classify cells as damaged
   if (gene_lower != "None"){
     gene_lower <- as.numeric(gene_lower)
-    sample_ID_preQC_df$lower_threshold <- ifelse(gene_count<gene_lower,
+    sample_ID_preQC_df$lower_threshold <- ifelse(sample_ID_preQC_df$gene_count<gene_lower,
                                                   "Damaged",
                                                   "Healthy")
   }
   # Use mitochondrial percentage threshold to classify cells as damaged
   if (mitochondria_percent != "None"){
     mitochondria_percent <- as.numeric(mitochondria_percent)
-    sample_ID_preQC_df$mitochondria_threshold <- ifelse(mito_percent>mitochondria_percent,
+    sample_ID_preQC_df$mitochondria_threshold <- ifelse(sample_ID_preQC_df$mito_percent>mitochondria_percent,
                                                         "Damaged",
                                                         "Healthy")
   }

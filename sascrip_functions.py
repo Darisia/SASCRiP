@@ -9,6 +9,7 @@ import kb_python
 from kb_python import ref
 from kb_python import count
 import gen_func # The python 'module' I created that contains general functions
+import gzip
 
 
 #########################################################################################
@@ -356,9 +357,9 @@ def check_ercc(
             single_cell_technology,
             input_directory = False,
             read_separator = None,
-            UMI_bp='0',
-            barcode_bp='0',
-            transcript_bp='0'
+            UMI_bp=None,
+            barcode_bp=None,
+            transcript_bp=None
 ):
     # Make the output directory if it does not already exist
     gen_func.mkdirs(output_directory_path)
@@ -374,6 +375,38 @@ def check_ercc(
         )
         # Set list of fastqs as the sorted generated list
         list_of_fastqs = sorted_fastqs_list
+
+    if (UMI_bp is None or barcode_bp is None or transcript_bp is None):
+        # If 10xv1 data - detect number of base pairs for UMI, barcode and transcript sequence
+        base_pairs_transcript = []
+        with gzip.open(list_of_fastqs[0]) as infile:
+            first_four = 4
+            for i in range(first_four):
+                line = infile.readline()
+                base_pairs_transcript.append(line)
+
+        transcript_bp = len(base_pairs_transcript[1]) - 1
+        transcript_bp = str(transcript_bp)
+
+        base_pairs_UMI = []
+        with gzip.open(list_of_fastqs[1]) as infile:
+            first_four = 4
+            for i in range(first_four):
+                line = infile.readline()
+                base_pairs_UMI.append(line)
+
+        UMI_bp = len(base_pairs_UMI[1]) - 1
+        UMI_bp = str(UMI_bp)
+
+        base_pairs_barcode = []
+        with gzip.open(list_of_fastqs[2]) as infile:
+            first_four = 4
+            for i in range(first_four):
+                line = infile.readline()
+                base_pairs_barcode.append(line)
+
+        barcode_bp = len(base_pairs_barcode[1]) - 1
+        barcode_bp = str(barcode_bp)
 
     # Create paths for all files and directories generated within this function
     all_ERCC_out_path = os.path.join(output_directory_path, 'ERCC_analysis')
@@ -418,9 +451,9 @@ def kallisto_bustools_count(
                         k_mer_length = 31,
                         intron = False,
                         filter=True,
-                        UMI_bp='0',
-                        barcode_bp='0',
-                        transcript_bp='0',
+                        UMI_bp=None,
+                        barcode_bp=None,
+                        transcript_bp=None,
                         whitelist_path='None',
                         path_to_prefix_count_files='unfiltered_counts',
                         memory = '4G'
@@ -455,6 +488,38 @@ def kallisto_bustools_count(
         )
         # Set list of fastqs as the sorted generated list
         list_of_fastqs = sorted_fastqs_list
+
+    if (UMI_bp is None or barcode_bp is None or transcript_bp is None):
+        # If 10xv1 data - detect number of base pairs for UMI, barcode and transcript sequence
+        base_pairs_transcript = []
+        with gzip.open(list_of_fastqs[0]) as infile:
+            first_four = 4
+            for i in range(first_four):
+                line = infile.readline()
+                base_pairs_transcript.append(line)
+
+        transcript_bp = len(base_pairs_transcript[1]) - 1
+        transcript_bp = str(transcript_bp)
+
+        base_pairs_UMI = []
+        with gzip.open(list_of_fastqs[1]) as infile:
+            first_four = 4
+            for i in range(first_four):
+                line = infile.readline()
+                base_pairs_UMI.append(line)
+
+        UMI_bp = len(base_pairs_UMI[1]) - 1
+        UMI_bp = str(UMI_bp)
+
+        base_pairs_barcode = []
+        with gzip.open(list_of_fastqs[2]) as infile:
+            first_four = 4
+            for i in range(first_four):
+                line = infile.readline()
+                base_pairs_barcode.append(line)
+
+        barcode_bp = len(base_pairs_barcode[1]) - 1
+        barcode_bp = str(barcode_bp)
 
     # Create paths for all the other files and directories generated within this function
     all_count_out_path = os.path.join(output_directory_path, 'Count_analysis')
@@ -525,10 +590,10 @@ def include_ERCC_bus_count(
                         k_mer_length = 31,
                         intron = False,
                         filter = True,
-                        UMI_bp='0',
-                        barcode_bp='0',
-                        transcript_bp='0',
-                        whitelist_path='None',
+                        UMI_bp=None,
+                        barcode_bp=None,
+                        transcript_bp=None,
+                        whitelist_path=None,
                         path_to_prefix_count_files='unfiltered_counts',
                         memory = '4G'
 ):
@@ -869,31 +934,31 @@ def run_cqc(input_file_or_folder,
 
 # sctransform function that Runs SCTransform from within Seurat to normalise the single-cell data for seuqencing depth
 def sctransform_normalize(
-	seurat_object,
-	sample_ID,
-	output_directory_path = "working_directory",
-    ouput_log_matrix = False,
+    seurat_object,
+    sample_ID,
+    output_directory_path = "working_directory",
+    output_log_matrix = False,
     output_count_matrix = False,
-	transcrirpts_to_genes_file = None,
-	**additional_sctransform_arguments): # Don't forget that there were some issues with this
+    transcripts_to_genes_file = None,
+    **additional_sctransform_arguments): # Don't forget that there were some issues with this
 
-	'''
-	Wraps the SCTransform function within Seurat to perform normalisation on the raw counts
+    '''
+    Wraps the SCTransform function within Seurat to perform normalisation on the raw counts
 
-	Parameters:
-	seurat_object(str): Path to the saved seurat object
-	sample_ID(str): Name of the sample
-	output_directory_path(str): Path to the output directory where all generated files and folders will be saved
-	ENSG_gname38_path(str): Path to the file called ENSG_gname38.tsv that will allow us to convert ENSG name into hgnc symbols
-	**additional_sctransform_arguments: additional arguements (with key words) will be passed to Seurat's SCTransform function
+    Parameters:
+    seurat_object(str): Path to the saved seurat object
+    sample_ID(str): Name of the sample
+    output_directory_path(str): Path to the output directory where all generated files and folders will be saved
+    ENSG_gname38_path(str): Path to the file called ENSG_gname38.tsv that will allow us to convert ENSG name into hgnc symbols
+    **additional_sctransform_arguments: additional arguements (with key words) will be passed to Seurat's SCTransform function
 
-	'''
+    '''
 
-	# Sort out the output directory
-	if output_directory_path == "working_directory":
-		output_directory_path = "./"
-	else:
-		gen_func.mkdirs(output_directory_path)
+    # Sort out the output directory
+    if output_directory_path == "working_directory":
+        output_directory_path = "./"
+    else:
+        gen_func.mkdirs(output_directory_path)
 
     # Generate the directory where the output log mtx matrix would be saved
     if output_log_matrix == True:
@@ -927,77 +992,77 @@ def sctransform_normalize(
         logger.warning("No transcripts_to_genes_file given. If ESEMBL gene names are used, a Seurat object cannot be properly generated and an error will be returned")
         ensg_gname_path = "None"
 
-	# Create list of values from the additional argument dictionary
-	# .. if there is additional arguments - should test first
-	if len(additional_sctransform_arguments) == 0:
-		is_add_args = False
-	else:
-		is_add_args = True
+    # Create list of values from the additional argument dictionary
+    # .. if there is additional arguments - should test first
+    if len(additional_sctransform_arguments) == 0:
+        is_add_args = False
+    else:
+        is_add_args = True
 
-	if is_add_args is True:
+    if is_add_args is True:
 
-		# put the values from additional argument dictionary into a list
-		additional_argument_values = list(additional_sctransform_arguments.values())
+        # put the values from additional argument dictionary into a list
+        additional_argument_values = list(additional_sctransform_arguments.values())
 
-		# Use that list in the get_data_type function from the gen_func "module"
-		data_type_information_both = gen_func.get_data_type(
-			additional_argument_values,
-			return_type = "both",
-			sep_string_by = ";")
+        # Use that list in the get_data_type function from the gen_func "module"
+        data_type_information_both = gen_func.get_data_type(
+            additional_argument_values,
+            return_type = "both",
+            sep_string_by = ";")
 
-		# Extract the data type information string
-		data_type_information = data_type_information_both[1]
+        # Extract the data type information string
+        data_type_information = data_type_information_both[1]
 
-		# Extract the data type information list
-		data_type_information_list = data_type_information_both[0]
+        # Extract the data type information list
+        data_type_information_list = data_type_information_both[0]
 
-		# Check if any input parameters is classified as an unknown data type
-		if "unknown" in data_type_information_list:
-			data_type_error = True
-		else:
-			data_type_error = False
+        # Check if any input parameters is classified as an unknown data type
+        if "unknown" in data_type_information_list:
+            data_type_error = True
+        else:
+            data_type_error = False
 
-		# Convert the additional arguments into a long string using function from gen_func "module"
-		add_args_list = gen_func.argument_to_string(
-			additional_sctransform_arguments,
-			return_type = "string",
-			sep_string_by = ";")
+        # Convert the additional arguments into a long string using function from gen_func "module"
+        add_args_list = gen_func.argument_to_string(
+            additional_sctransform_arguments,
+            return_type = "string",
+            sep_string_by = ";")
 
-		# All additional argument information is given
+        # All additional argument information is given
 
-	else:
+    else:
 
-		data_type_information = ""
-		add_args_list = ""
+        data_type_information = ""
+        add_args_list = ""
 
-	# all variables for the bash code
-	# 1) path to seurat object
-	# 2) sample_ID
-	# 3) output_directory_path
-	# 4) ENSG_gname_path
-	# 5) cell_cycle_normalisation
-	# 6) is_add_args
-	# 7) data_type_information
-	# 8) add_args_list
+    # all variables for the bash code
+    # 1) path to seurat object
+    # 2) sample_ID
+    # 3) output_directory_path
+    # 4) ENSG_gname_path
+    # 5) cell_cycle_normalisation
+    # 6) is_add_args
+    # 7) data_type_information
+    # 8) add_args_list
 
-	# let's put together the bash code
-	command = "Rscript ./normalise_seurat.R {} {} {} {} {} {} {} {} {}".format(
-		seurat_object,
-		sample_ID,
-		output_directory_path,
-		ensg_gname_path,
+    # let's put together the bash code
+    command = "Rscript ./normalise_seurat.R {} {} {} {} {} {} {} {} {}".format(
+        seurat_object,
+        sample_ID,
+        output_directory_path,
+        ensg_gname_path,
         output_log_matrix,
         output_count_matrix,
-		is_add_args,
-		data_type_information,
-		add_args_list)
+        is_add_args,
+        data_type_information,
+        add_args_list)
 
-	# Use subprocess to run the bash command through python
-	check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    # Use subprocess to run the bash command through python
+    check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
-	# Check to see if there was an error. If so, print the standard error
-	if check_process.returncode != 0:
-		print(check_process.stderr)
+    # Check to see if there was an error. If so, print the standard error
+    if check_process.returncode != 0:
+        print(check_process.stderr)
 
 ####################################################################################################
 
@@ -1032,17 +1097,30 @@ def sascrip_preprocess(
 
     # First we need to break down the steps
     # Step one: Run kallisto_bustools_count to generate the unfiltered and filtered gene count matrix
-    gen_files = sascrip_functions.kallisto_bustools_count(
-        list_of_fastqs = list_of_fastqs,
-        single_cell_technology = single_cell_technology,
-        output_directory_path = output_directory_path,
-        species_index = species_index,
-        species_t2g = species_t2g,
-        input_directory = input_directory,
-        read_separator = read_separator,
-        filter = filter,
-        **kallisto_bustools_count_parameters
-        )
+
+    if kallisto_bustools_count_parameters is None:
+        gen_files = sascrip_functions.kallisto_bustools_count(
+            list_of_fastqs = list_of_fastqs,
+            single_cell_technology = single_cell_technology,
+            output_directory_path = output_directory_path,
+            species_index = species_index,
+            species_t2g = species_t2g,
+            input_directory = input_directory,
+            read_separator = read_separator,
+            filter = filter
+            )
+    else:
+        gen_files = sascrip_functions.kallisto_bustools_count(
+            list_of_fastqs = list_of_fastqs,
+            single_cell_technology = single_cell_technology,
+            output_directory_path = output_directory_path,
+            species_index = species_index,
+            species_t2g = species_t2g,
+            input_directory = input_directory,
+            read_separator = read_separator,
+            filter = filter,
+            **kallisto_bustools_count_parameters
+            )
 
     # Step two would be to edit the bus matrix and get it ready for input into Seurat
     ## First we need to set the paths to the generated matrix and features file
@@ -1053,7 +1131,7 @@ def sascrip_preprocess(
     unfiltered_barcodes = os.path.join(unfiltered_path, "unfiltered_counts.barcodes.txt")
     unfiltered_genes = os.path.join(unfiltered_path, "unfiltered_counts.genes.txt")
     filtered_mtx_matrix = os.path.join(filtered_path, "filtered_counts.mtx")
-    filtered_barcodes = os.path.join(filtered_path, "filtered-counts.barcodes.txt")
+    filtered_barcodes = os.path.join(filtered_path, "filtered_counts.barcodes.txt")
     filtered_genes = os.path.join(filtered_path, "filtered_counts.genes.txt")
     species_t2g = gen_files["transcript_to_genes"]
 
@@ -1082,16 +1160,24 @@ def sascrip_preprocess(
     # now we need to run the "run_cqc" function
     # Create new folder for quality control stuff
     cell_quality_control_folder = os.path.join(output_directory_path, "Cell_quality_control_analysis")
-    mkdirs(cell_quality_control_folder)
+    gen_func.mkdirs(cell_quality_control_folder)
 
     # Call the function
-    run_cqc(
-    input_file_or_folder = input_files,
-    sample_ID = sample_ID,
-    output_folder = cell_quality_control_folder,
-    transcripts_to_genes_file = species_t2g
-    **run_cqc_parameters
-    )
+    if run_cqc_parameters is None:
+        run_cqc(
+        input_file_or_folder = input_files,
+        sample_ID = sample_ID,
+        output_directory_path = cell_quality_control_folder,
+        transcripts_to_genes_file = species_t2g
+        )
+    else:
+        run_cqc(
+        input_file_or_folder = input_files,
+        sample_ID = sample_ID,
+        output_directory_path = cell_quality_control_folder,
+        transcripts_to_genes_file = species_t2g,
+        **run_cqc_parameters
+        )
 
     # Set name of the subset seurat object produced
     subset_seurat_filename = sample_ID + "_subset_seurat.rds"
@@ -1100,11 +1186,18 @@ def sascrip_preprocess(
     # Now it's time to run the normalization function
     # First create the directory to store this stuff
     normalized_folder = os.path.join(output_directory_path, "sctransform_normalized")
-    mkdirs(normalized_folder)
+    gen_func.mkdirs(normalized_folder)
     # Call the function
-    sctransform_normalize(
-    seurat_object = subset_seurat,
-    sample_ID = sample_ID,
-    output_directory_path = normalized_folder,
-    **additional_sctransform_arguments
-    )
+    if additional_sctransform_arguments is None:
+        sctransform_normalize(
+        seurat_object = subset_seurat,
+        sample_ID = sample_ID,
+        output_directory_path = normalized_folder
+        )
+    else:
+        sctransform_normalize(
+        seurat_object = subset_seurat,
+        sample_ID = sample_ID,
+        output_directory_path = normalized_folder,
+        **additional_sctransform_arguments
+        )
