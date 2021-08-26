@@ -685,9 +685,7 @@ output_directory
     # Check if the name of the genes file is in the correct format
     srt_gene_index_names = [
     "features.tsv.gz",
-    "features.tsv",
-    "genes.tsv.gz",
-    "genes.tsv"
+    "features.tsv"
     ]
 
     if os.path.basename(gene_index) in srt_gene_index_names:
