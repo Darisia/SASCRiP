@@ -674,54 +674,125 @@ def include_ERCC_bus_count(
 #######################################################################################################
 # Function for editing BUStools output for input into Seurat (cell_cqc)
 #######################################################################################################
+# Define the function that will check the matrix
 def seurat_matrix(
-    bustools_mtx_matrix,
-    bustools_gene_index,
-    bustools_barcode_index,
-    output_directory_path
+matrix_file,
+gene_index,
+barcode_index,
+output_directory
 ):
 
-    '''
-	Runs a bash function that edits the bustools feature file so that is resembles a CellRangers features file so it can be input into Seurat
+    # Check if the name of the genes file is in the correct format
+    srt_gene_index_names = [
+    "features.tsv.gz",
+    "features.tsv",
+    "genes.tsv.gz",
+    "genes.tsv"
+    ]
 
-	Parameters:
-    bustools_mtx_matrix(str): Path to the bustools mtx matrix file
-	bustools_gene_index(str): Path to the output bustools gene index file
-    bustools_barcode_index(str): Path to the bustools barcodes file
-	transcripts_to_genes_file(str): Path to the transcripts to genes file
-	output_directory_path(str): Path to the output directory where the matrix files will be saved
-
-	'''
-
-    logger.info("Rearranging bustools output matrix for input into Seurat")
-
-    # Let's start by checking and/or creating the output directory
-	# .. That means we need the gen_func script
-    if output_directory_path=="working_directory":
-        output_directory_path = "./"
+    if os.path.basename(gene_index) in srt_gene_index_names:
+        gene_srt_name = True
     else:
-        gen_func.mkdirs(output_directory_path)
+        gene_srt_name = False
 
-    ## First edit the gene index
-    # Let's put together the bash command
-    command = "sh ./bus2CR_features.sh {} {}".format(
-	bustools_gene_index,
-	output_directory_path)
+    # Check if the name of the barcodes file is in the correct format
+    srt_barcode_index_names = [
+    "barcodes.tsv.gz",
+    "barcodes.tsv"
+    ]
 
-	# Run the bash command using subproces.run and save the standard output to check_process
-    check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    if os.path.basename(barcode_index) in srt_barcode_index_names:
+        barcode_srt_name = True
+    else:
+        barcode_srt_name = False
 
-    # Check the returncode - if there were errors - print the standard errors
-    if check_process.returncode != 0:
-        print(check_process.stderr.decode())
+    # Check if the name of the matrix file is in the correct format
+    srt_matrix_file_names = [
+    "matrix.mtx.gz",
+    "matrix.mtx.gz"
+    ]
 
-    logger.info(check_process.stdout.decode())
+    if os.path.basename(matrix_file) in srt_matrix_file_names:
+        matrix_srt_name = True
+    else:
+        matrix_srt_name = False
 
-    # Edit the barcode file
-    # put the bash command together
-    command = "sh ./bus2CR_barcodes.sh {} {}".format(
-        bustools_barcode_index,
-	output_directory_path)
+    # Set the zipped to None (as a placeholder)
+    gene_zipped = None
+    barcode_zipped = None
+    matrix_zipped = None
+
+    # Create dictionary of the matrix file names and the variable names checking if the file is zipped
+    check_zipped_dict = {
+    gene_index: gene_zipped,
+    barcode_index: barcode_zipped,
+    matrix_file: matrix_zipped
+    }
+
+    # For loop that checks if the files are zipped
+    for key, value in check_zipped_dict.items():
+        if key.endswith(".gz"):
+            check_zipped_dict[key] = True
+        else:
+            check_zipped_dict[key] = False
+
+    # Check if the matrix is in the correct format
+    line_matrix = []
+    if check_zipped_dict[matrix_file] is True:
+        with gzip.open(matrix_file) as infile:
+            for i in range(20):
+                line = infile.readline()
+                line_matrix.append(line.decode())
+    else:
+        with open(matrix_file) as infile:
+            for i in range(20):
+                line = infile.readline()
+                line_matrix.append(line)
+
+    gene_matrix = []
+    if check_zipped_dict[gene_index] is True:
+        with gzip.open(gene_index) as infile:
+            lines = infile.readlines()
+            for line in lines:
+                gene_matrix.append(line.decode())
+            total_genes = len(gene_matrix)
+    else:
+        with open(gene_index) as infile:
+            lines = infile.readlines()
+            for line in lines:
+                gene_matrix.append(line)
+            total_genes = len(gene_matrix)
+
+    for element in line_matrix:
+        if str(total_genes) in element:
+            total_matrix = element
+
+    if type(total_matrix) is list:
+        total_matrix_list = total_matrix[0].split(sep = " ")
+    else:
+        total_matrix_list = total_matrix.split(sep = " ")
+
+    if total_matrix_list[0] == str(total_genes):
+        matrix_srt_format = True
+    else:
+        matrix_srt_format = False
+
+    # Sort out the output directory
+    gen_func.mkdirs(output_directory)
+
+    # Create the bash command to run the bash function that will check and edit the matrix files
+    command = "sh ./edit_seurat_matrix.sh {} {} {} {} {} {} {} {} {} {} {}".format(
+        matrix_file,
+        gene_index,
+        barcode_index,
+        output_directory,
+        gene_srt_name,
+        barcode_srt_name,
+        matrix_srt_name,
+        check_zipped_dict[gene_index],
+        check_zipped_dict[barcode_index],
+        check_zipped_dict[matrix_file],
+        matrix_srt_format)
 
     # Run the bash command using subprocess.run and save the standard output to check_process
     check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
@@ -729,21 +800,6 @@ def seurat_matrix(
     # check the returncode - if there are errors - print the standard errors
     if check_process.returncode != 0:
         print(check_process.stderr.decode())
-
-    logger.info(check_process.stdout.decode())
-
-    # Edit the mtx output matrix
-    # put the bash command together
-    command = "sh ./bus2CR_matrix.sh {} {}".format(bustools_mtx_matrix, output_directory_path)
-
-    # Run the bash command using subprocess.run and save the standard output to check_process
-    check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
-
-	# check the returncode - if there are errors - print the standard errors
-    if check_process.returncode != 0:
-        print(check_process.stderr.decode())
-
-    logger.info(check_process.stdout.decode())
 
 
 ####################################################################################################################
