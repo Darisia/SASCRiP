@@ -369,7 +369,7 @@ Please see description above
 
 ## `seurat_matrix`
 
-This SASCRiP function is designed to convert the output mtx matrix from `kallisto_bustools_count` or `include_ERCC_bus_count` to a gene-count matrix that is supported by Seurat. To do this, seurat_matrix transposes the bustools matrix so that genes and cells are represented in rows and columns respectively. Finally, all three files (mtx matrix, gene index file, and barcode index file) are renamed and compressed. 
+This SASCRiP function is designed to check the input matrix and index files to make sure it is in the correct format for use with Seurat. If the input files are not in the correct format `seurat_matrix` rearranges the files and saves the new files in the specified output directory.  
 
 #### Usage
 
@@ -378,10 +378,10 @@ import sascrip
 from sascrip import sascrip_functions
 
 sascrip_functions.seurat_matrix(
-     bustools_mtx_matrix,
-     bustools_gene_index,
-     bustools_barcode_index,
-     output_directory_path
+     matrix_file,
+     gene_index,
+     barcode_index,
+     output_directory
 )
 
 ````
@@ -391,13 +391,13 @@ sascrip_functions.seurat_matrix(
 Required parameters
 ___________________
 
-bustools_mtx_matrix (str):         Path to the BUStools mtx matrix file
+matrix_file (str):        Path to the mtx matrix file
 
-bustools_gene_index (str):         Path to the output BUStools gene index file
+gene_index (str):         Path to the gene index file
 
-bustools_barcode_index (str):      Path to the BUStools barcode index file
+barcode_index (str):      Path to the barcode index file
 
-output_directory_path (str):       Path to the output directory where the new matrix files will be saved
+output_directory (str):   Path to the output directory where the new matrix files will be saved, if new files are generated
 
 ```` 
 
