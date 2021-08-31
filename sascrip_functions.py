@@ -4,6 +4,7 @@
 # ALL required modules
 import subprocess
 import os
+import pkg_resources
 # All things that need to be important for these the kb-python functions to work
 import kb_python
 from kb_python import ref
@@ -67,8 +68,11 @@ def install_R_packages():
     Installs the R packages (tidyverse and Seurat) that are required to run SASCRiP functions
 
     '''
+    # Path to the required R script
+    R_file = pkg_resources.resource_filename('SASCRiP', 'install_packages.R')
 
-    command = 'Rscript ./install_packages.R'
+    # Create the command
+    command = 'Rscript {}'.format(R_file)
     check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
     # Check to see if there was an error. If so, print the standard error - This should be edited to print readible errors
@@ -208,8 +212,11 @@ def edit_10xv1_fastq(
         else:
           fastq_output = fastq_output
 
+        # Path to the required R script
+        Bash_file = pkg_resources.resource_filename('SASCRiP', 'edit_fastq_function.sh')
+
         # Let's create the bash command
-        command = "./edit_fastq_function.sh {} {}".format(RA_10xv1_files_string, fastq_output)
+        command = "sh {} {} {}".format(Bash_file, RA_10xv1_files_string, fastq_output)
 
         check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
 
@@ -778,8 +785,12 @@ output_directory
     # Sort out the output directory
     gen_func.mkdirs(output_directory)
 
+    # Path to the required R script
+    Bash_file = pkg_resources.resource_filename('SASCRiP', 'edit_seurat_matrix.sh')
+
     # Create the bash command to run the bash function that will check and edit the matrix files
-    command = "sh ./edit_seurat_matrix.sh {} {} {} {} {} {} {} {} {} {} {}".format(
+    command = "sh {} {} {} {} {} {} {} {} {} {} {} {}".format(
+        Bash_file,
         matrix_file,
         gene_index,
         barcode_index,
@@ -916,7 +927,11 @@ def run_cqc(input_file_or_folder,
 
     # if transcripts_to_genes supplied - create ensg_gname
     if transcripts_to_genes_file != None:
-        command = 'sh cut_t2g.sh {} {}'.format(
+        # Path to the required R script
+        Bash_file = pkg_resources.resource_filename('SASCRiP', 'cut_t2g.sh')
+
+        command = 'sh {} {} {}'.format(
+        Bash_file,
         transcripts_to_genes_file,
         output_directory_path
         )
@@ -936,9 +951,12 @@ def run_cqc(input_file_or_folder,
         logger.warning("No transcripts_to_genes_file given. If ESEMBL gene names are used, a Seurat object cannot be properly generated and an error will be returned")
         ensg_gname_path = "None"
 
+    # Path to the required R script
+    R_file = pkg_resources.resource_filename('SASCRiP', 'cqc_srt.R')
 
     # The bash commands to run the cell quality control R script
-    command = 'Rscript cqc_srt.R {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(
+    command = 'Rscript {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {} {}'.format(
+    R_file,
     input_file_or_folder,
     sample_ID,
     output_directory_path,
@@ -1026,7 +1044,11 @@ def sctransform_normalize(
 
     # if transcripts_to_genes supplied - create ensg_gname
     if transcripts_to_genes_file != None:
-        command = 'sh cut_t2g.sh {} {}'.format(
+        # Path to the required R script
+        Bash_file = pkg_resources.resource_filename('SASCRiP', 'cut_t2g.sh')
+
+        command = 'sh {} {} {}'.format(
+        Bash_file,
         transcripts_to_genes_file,
         output_directory_path
         )
@@ -1099,8 +1121,12 @@ def sctransform_normalize(
     # 7) data_type_information
     # 8) add_args_list
 
+    # Path to the required R script
+    R_file = pkg_resources.resource_filename('SASCRiP', 'normalise_seurat.R')
+
     # let's put together the bash code
-    command = "Rscript ./normalise_seurat.R {} {} {} {} {} {} {} {} {}".format(
+    command = "Rscript {} {} {} {} {} {} {} {} {} {}".format(
+        R_file,
         seurat_object,
         sample_ID,
         output_directory_path,
