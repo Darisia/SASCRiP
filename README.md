@@ -77,15 +77,13 @@ from sascrip import sascrip_functions
 sascrip_functions.edit_10xv1_fastq(input_directories)
 
 ````
-#### Parameters
 
-````
-Required parameters
-___________________
+#### Required parameters
 
-input_directories (str-list): Path to the directory/s containing the RA 10xv1 FastQ files. If there are more than one directories. A list should be given with all input directories 
+| Parameter | Description |
+| --- | --- |
+| `input_directories` (str-list) | Path to the directory/s containing the RA 10xv1 FastQ files. If there are more than one directories. A list should be given with all input directories |
 
-````    
 
 ## `check_ercc`
 
@@ -110,34 +108,28 @@ sascrip_functions.check_ercc(
 )
 
 ````
-#### Parameters
-
-````
-Required parameters
+#### Required Parameters
 ___________________
 
-ERCC_fasta (str):             Path to the ERCC FASTA file
 
-output_directory_path (str):  Path to the output directory where output files will be saved
+| Parameter | Description |
+| --- | --- |
+| `ERCC_fasta` (str) | Path to the ERCC FASTA file |
+| `output_directory_path` (str) | Path to the output directory where output files will be saved |
+| `list_of_fastqs` (str-list) | Python list of the paths to input FastQ files in the *order specified by Kallisto. The folder containing all the input files can be given instead and the relevant FastQ files will be captured and sorted in the correct order. To use this feature - input the path to the directory here (If multiple directories are used, input all the directories as a list), set input_directory = True and provide the strings used to separate the reads in the read_separator parameter. * See example below |
+| `single_cell_technology` (str) | The single-cell sequencing technology that was used as *specified by Kallisto. If 10xv1 technology was used, the UMI_bp and barcode_bp parameters are required |
 
-list_of_fastqs (str-list):    Python list of the paths to input FastQ files in the *order specified by Kallisto. The folder containing all the input files can be given instead and the relevant FastQ files will be captured and sorted in the correct order. To use this feature - input the path to the directory here (If multiple directories are used, input all the directories as a list), set input_directory = True and provide the strings used to separate the reads in the read_separator parameter. * See example below
-
-single_cell_technology (str): The single-cell sequencing technology that was used as *specified by Kallisto. If 10xv1 technology was used, the UMI_bp and barcode_bp parameters are required
-
-Optional parameters
+#### Optional parameters
 ___________________
 
-input_directory (bool):       Indicate whether the list_of_fastqs parameter is given the path to the directory containing all input FastQ files * See example below
+| Parameter | Description |
+| --- | --- |
+|`input_directory` (bool) | Indicate whether the list_of_fastqs parameter is given the path to the directory containing all input FastQ files * See example below |
+| `read_separator` (str-list) | The strings used to separate the input reads. Within a list - the first element should contain the string used to identify read 1, the second element should contain the string used to identify read 2 and if "10xv1" FastQ files are used, a third element is required that contains the string used to identify read 3. * See example below |
+| `UMI_bp` (str) | The number of base pairs sequenced for the UMI sequence. If 10xv1 technology is used, this parameter is required |
+| `barcode_bp` (str) | The number of base pairs sequenced for the barcode sequence. If 10xv1 technology is used, this parameter is required |
+| `transcript_bp` (str) | The number of base pairs sequenced for the transcript sequence |
 
-read_separator (str-list):    The strings used to separate the input reads. Within a list - the first element should contain the string used to identify read 1, the second element should contain the string used to identify read 2 and if "10xv1" FastQ files are used, a third element is required that contains the string used to identify read 3. * See example below
-
-UMI_bp (str):                 The number of base pairs sequenced for the UMI sequence. If 10xv1 technology is used, this parameter is required
-
-barcode_bp (str):             The number of base pairs sequenced for the barcode sequence. If 10xv1 technology is used, this parameter is required
-
-transcript_bp (str):          The number of base pairs sequenced for the transcript sequence
-
-```` 
 
 * **Kallisto specified FastQ file order and single-cell technologies**
 
@@ -211,57 +203,37 @@ sascrip_functions.kallisto_bustools_count(
 )
 
 ````
-#### Parameters
-
-```
-
-
-Required parameters
+#### Required parameters
 ___________________
 
-list_of_fastqs (str-list):         Python list of the paths to input FastQ files in the *order specified by Kallisto. The folder containing all the input files can be given instead and the relevant FastQ files will be captured and sorted in the correct order. To use this feature - input the path to the directory here (If multiple directories are used, input all the directories as a list), set input_directory = True and provide the strings used to separate the reads in the read_separator parameter. * See example above (working with more than one set of FastQ files)
-
-single_cell_technology (str):      The single-cell sequencing technology that was used as *specified by Kallisto. If 10xv1 technology was used, the UMI_bp and barcode_bp parameters are required
-
-output_directory_path (str):       Path to the main output directory where all files and new directories will be created and saved
-
-species_index (str):               Path to the kallisto_index for the species of interest. If the Kallisto index needs to be generated, set species_index = None, generate_index = True and species_fasta = "path/to/cDNA FASTA".
-
-species_t2g (str):                 Path to the transcript-to-genes mapping file for the species of interest. If the transcripts-to-genes mapping file needs to be generated, set species_t2g = None, generate_index = True and species_gtf = "path/to/GTF file".
+| Parameter | Description |
+| --- | --- |
+| `list_of_fastqs` (str-list) | Python list of the paths to input FastQ files in the *order specified by Kallisto. The folder containing all the input files can be given instead and the relevant FastQ files will be captured and sorted in the correct order. To use this feature - input the path to the directory here (If multiple directories are used, input all the directories as a list), set input_directory = True and provide the strings used to separate the reads in the read_separator parameter. * See example above (working with more than one set of FastQ files) |
+| `single_cell_technology` (str) | The single-cell sequencing technology that was used as *specified by Kallisto. If 10xv1 technology was used, the UMI_bp and barcode_bp parameters are required |
+| `output_directory_path` (str) | Path to the main output directory where all files and new directories will be created and saved |
+| `species_index` (str) | Path to the kallisto_index for the species of interest. If the Kallisto index needs to be generated, set species_index = None, generate_index = True and species_fasta = "path/to/cDNA FASTA". |
+| `species_t2g` (str) | Path to the transcript-to-genes mapping file for the species of interest. If the transcripts-to-genes mapping file needs to be generated, set species_t2g = None, generate_index = True and species_gtf = "path/to/GTF file". |
 
 
-Optional parameters
+#### Optional parameters
 ___________________
 
-input_directory (bool):            Indicate whether the list_of_fastqs parameter is given the path to the directory containing all input FastQ files * See example above (working with more than one set of FastQ files)
-
-read_separator (str-list):         The strings used to separate the input reads. Within a list - the first element should contain the string used to identify read 1, the second element should contain the string used to identify read 2 and if "10xv1" FastQ files are used, a third element is required that contains the string used to identify read 3. * See example above (working with more than one set of FastQ files)
-
-generate_index (bool):             Indicate whether the Kallisto Index should be generated within the function. If set to True: the species_fasta and the species_gtf are required
-
-species_fasta (str):               Path to the transcriptome (cDNA) FASTA file for the species of interest. This will be used to generate the Kallisto index. If generate_index is set to True, this parameter is required.
-
-species_gtf (str):                 Path to the GTF file for the species of interest. This will be used to create the transcripts-to-genes mapping file. If generate_index is set to True, this parameter is required.
-
-k_mer_length (int):                The length of the K-mers that should be generated when creating the Kallisto index
-
-intron (bool):                     Indicate whether or not to include intron transcript ids
-
-filter (bool):                     Indicate whether or not to filter the BUS file prior to generating the gene-count matrix in mtx format
-
-UMI_bp (str):                      The number of base pairs sequenced for the UMI sequence. If 10xv1 technology is used, this parameter is required
-
-barcode_bp (str):                  The number of base pairs sequenced for the barcode sequence. If 10xv1 technology is used, this parameter is required
-
-transcript_bp (str):               The number of base pairs sequenced for the transcript sequence
-
-whitelist_path (str):              Path to the barcode whitelist that will be used for barcode correction 
-
-path_to_prefix_count_files (str):  Prefix of the output matrix files and indices
-
-memory (str):                      Amount of memory to use 
-
-```
+| Parameter | Description |
+| --- | --- |
+| `input_directory` (bool) | Indicate whether the list_of_fastqs parameter is given the path to the directory containing all input FastQ files * See example above (working with more than one set of FastQ files) |
+| `read_separator` (str-list) | The strings used to separate the input reads. Within a list - the first element should contain the string used to identify read 1, the second element should contain the string used to identify read 2 and if "10xv1" FastQ files are used, a third element is required that contains the string used to identify read 3. * See example above (working with more than one set of FastQ files) |
+| `generate_index` (bool) | Indicate whether the Kallisto Index should be generated within the function. If set to True: the species_fasta and the species_gtf are required |
+| `species_fasta` (str) | Path to the transcriptome (cDNA) FASTA file for the species of interest. This will be used to generate the Kallisto index. If generate_index is set to True, this parameter is required |
+| `species_gtf` (str) | Path to the GTF file for the species of interest. This will be used to create the transcripts-to-genes mapping file. If generate_index is set to True, this parameter is required. |
+| `k_mer_length` (int) | The length of the K-mers that should be generated when creating the Kallisto index |
+| `intron` (bool) | Indicate whether or not to include intron transcript ids |
+| `filter` (bool) | Indicate whether or not to filter the BUS file prior to generating the gene-count matrix in mtx format |
+| `UMI_bp` (str) | The number of base pairs sequenced for the UMI sequence. If 10xv1 technology is used, this parameter is required |
+| `barcode_bp` (str) | The number of base pairs sequenced for the barcode sequence. If 10xv1 technology is used, this parameter is required |
+| `transcript_bp` (str) | The number of base pairs sequenced for the transcript sequence |
+| `whitelist_path` (str) | Path to the barcode whitelist that will be used for barcode correction |
+| `path_to_prefix_count_files` (str) | Prefix of the output matrix files and indices |
+| `memory` (str) | Amount of memory to use |
 
 
 * **Kallisto specified FastQ file order and single-cell technologies**
