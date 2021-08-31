@@ -400,7 +400,7 @@ ___________________
 | `generate_seurat_object` (bool) | Indicate whether a seurat object should be generated from the input mtx matrix. If a Seurat object is input in the input_file_or_folder parameter, this parameter is required to be set to False. If a gene count matrix is input, this parameters is required to be set to True |
 | `subset_seurat_object` (bool) | Indicate whether the Seurat object should be subset, removing low-quality cells identified by given thresholds |
 | `generate_default_plots` (bool) | Indicate whether deafault plots should be generated to visualise the single-cell data and identified low-quality cells |
-| `gene_column` (int) | The column number in the genes index file that should be used for the row names (gene names) in the Seurat object |
+| `gene_column` (int) | The column number in the genes index file that should be used for the row names (gene names) in the Seurat object. 1-based |
 | `input_seurat_object` (bool) | Indicate whether the input_file_or_folder parameter contains the path to a saved Seurat object. If so, this parameter should be set to True |
 | `transcripts_to_genes_files` (str) | Path to the transcripts-to-genes mapping file that will allow ENSG gene names to be converted into corresponding HGNC gene symbols (within the seurat object) if required |
 | `gene_lower` (int/None) | Minimum number of genes that should be detected in healthy cells. If this cell metric should not be used to identify low-quality cells then gene_lower should be set to None. However, if this parameter is set to None and generate_default_plots is set to True, a warning will be returned as the visualisations that use this threshold cannot be generated |
