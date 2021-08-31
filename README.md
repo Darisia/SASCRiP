@@ -279,57 +279,38 @@ sascrip_functions.include_ERCC_bus_count(
 )
 
 ````
-#### Parameters
-
-````
-Required parameters
+#### Required parameters
 ___________________
 
-list_of_fastqs (str-list):         Python list of the paths to input FastQ files in the *order specified by Kallisto. The folder containing all the input files can be given instead and the relevant FastQ files will be captured and sorted in the correct order. To use this feature - input the path to the directory here (If multiple directories are used, input all the directories as a list), set input_directory = True and provide the strings used to separate the reads in the read_separator parameter. * See example above (working with more than one set of FastQ files)
-
-single_cell_technology (str):      The single-cell sequencing technology that was used as *specified by Kallisto. If 10xv1 technology was used, the UMI_bp and barcode_bp parameters are required
-
-output_directory_path (str):       Path to the main output directory where all files and new directories will be created and saved
-
-ERCC_fasta (str):                  Path to the ERCC FASTA file
-
-species_index (str):               Path to the kallisto_index for the species of interest. If the Kallisto index needs to be generated, set species_index = None, generate_index = True and species_fasta = "path/to/cDNA FASTA".
-
-species_t2g (str):                 Path to the transcript-to-genes mapping file for the species of interest. If the transcripts-to-genes mapping file needs to be generated, set species_t2g = None, generate_index = True and species_gtf = "path/to/GTF file".
-
-species_fasta (str):               Path to the transcriptome (cDNA) FASTA file for the species of interest. This will be required if ERCCs are included in the dataset
+| Parameter | Description |
+| --- | --- |
+|`list_of_fastqs` (str-list) | Python list of the paths to input FastQ files in the *order specified by Kallisto. The folder containing all the input files can be given instead and the relevant FastQ files will be captured and sorted in the correct order. To use this feature - input the path to the directory here (If multiple directories are used, input all the directories as a list), set input_directory = True and provide the strings used to separate the reads in the read_separator parameter. * See example above (working with more than one set of FastQ files) |
+| `single_cell_technology` (str) | The single-cell sequencing technology that was used as *specified by Kallisto. If 10xv1 technology was used, the UMI_bp and barcode_bp parameters are required |
+| `output_directory_path` (str) | Path to the main output directory where all files and new directories will be created and saved |
+| `ERCC_fasta` (str) | Path to the ERCC FASTA file
+| `species_index` (str) | Path to the kallisto_index for the species of interest. If the Kallisto index needs to be generated, set species_index = None, generate_index = True and species_fasta = "path/to/cDNA FASTA". |
+| `species_t2g` (str) | Path to the transcript-to-genes mapping file for the species of interest. If the transcripts-to-genes mapping file needs to be generated, set species_t2g = None, generate_index = True and species_gtf = "path/to/GTF file". |
+| `species_fasta` (str) | Path to the transcriptome (cDNA) FASTA file for the species of interest. This will be required if ERCCs are included in the dataset |
 
 
-Optional parameters
+#### Optional parameters
 ___________________
 
-input_directory (bool):            Indicate whether the list_of_fastqs parameter is given the path to the directory containing all input FastQ files * See example above (working with more than one set of FastQ files)
-
-read_separator (str-list):         The strings used to separate the input reads. Within a list - the first element should contain the string used to identify read 1, the second element should contain the string used to identify read 2 and if "10xv1" FastQ files are used, a third element is required that contains the string used to identify read 3. * See example above (working with more than one set of FastQ files)
-
-generate_index (bool):             Indicate whether the Kallisto Index should be generated within the function. If set to True: the species_fasta and the species_gtf are required
-
-species_gtf (str):                 Path to the GTF file for the species of interest. This will be used to create the transcripts-to-genes mapping file. If generate_index is set to True, this parameter is required.
-
-k_mer_length (int):                The length of the K-mers that should be generated when creating the Kallisto index
-
-intron (bool):                     Indicate whether or not to include intron transcript ids
-
-filter (bool):                     Indicate whether or not to filter the BUS file prior to generating the gene-count matrix in mtx format
-
-UMI_bp (str):                      The number of base pairs sequenced for the UMI sequence. If 10xv1 technology is used, this parameter is required
-
-barcode_bp (str):                  The number of base pairs sequenced for the barcode sequence. If 10xv1 technology is used, this parameter is required
-
-transcript_bp (str):               The number of base pairs sequenced for the transcript sequence
-
-whitelist_path (str):              Path to the barcode whitelist that will be used for barcode correction 
-
-path_to_prefix_count_files (str):  Prefix of the output matrix files and indices
-
-memory (str):                      Amount of memory to use 
-
-```` 
+| Parameter | Description |
+| --- | --- |
+| `input_directory` (bool) | Indicate whether the list_of_fastqs parameter is given the path to the directory containing all input FastQ files * See example above (working with more than one set of FastQ files) |
+| `read_separator` (str-list) | The strings used to separate the input reads. Within a list - the first element should contain the string used to identify read 1, the second element should contain the string used to identify read 2 and if "10xv1" FastQ files are used, a third element is required that contains the string used to identify read 3. * See example above (working with more than one set of FastQ files) |
+| `generate_index` (bool) | Indicate whether the Kallisto Index should be generated within the function. If set to True: the species_fasta and the species_gtf are required |
+| `species_gtf` (str) | Path to the GTF file for the species of interest. This will be used to create the transcripts-to-genes mapping file. If generate_index is set to True, this parameter is required. |
+| `k_mer_length` (int) | The length of the K-mers that should be generated when creating the Kallisto index |
+| `intron` (bool) | Indicate whether or not to include intron transcript ids |
+| `filter` (bool) | Indicate whether or not to filter the BUS file prior to generating the gene-count matrix in mtx format |
+| `UMI_bp` (str) | The number of base pairs sequenced for the UMI sequence. If 10xv1 technology is used, this parameter is required |
+| `barcode_bp` (str) | The number of base pairs sequenced for the barcode sequence. If 10xv1 technology is used, this parameter is required |
+| `transcript_bp` (str) | The number of base pairs sequenced for the transcript sequence |
+| `whitelist_path` (str) | Path to the barcode whitelist that will be used for barcode correction |
+| `path_to_prefix_count_files` (str) | Prefix of the output matrix files and indices |
+| `memory` (str) | Amount of memory to use |
 
 * **Kallisto specified FastQ file order and single-cell technologies**
 
@@ -357,22 +338,15 @@ sascrip_functions.seurat_matrix(
 )
 
 ````
-#### Parameters
-
-````
-Required parameters
+#### Required parameters
 ___________________
 
-matrix_file (str):        Path to the mtx matrix file
-
-gene_index (str):         Path to the gene index file
-
-barcode_index (str):      Path to the barcode index file
-
-output_directory (str):   Path to the output directory where the new matrix files will be saved, if new files are generated
-
-```` 
-
+| Parameters | Description |
+| --- | --- |
+| `matrix_file` (str) | Path to the mtx matrix file |
+| `gene_index` (str) | Path to the gene index file |
+| `barcode_index` (str) | Path to the barcode index file |
+| `output_directory` (str) | Path to the output directory where the new matrix files will be saved, if new files are generated |
 
 
 ## `run_cqc`
@@ -406,52 +380,35 @@ sascrip_functions.run_cqc(
 )
 
 ````
-#### Parameters
-
-````
-Required parameters
+#### Required parameters
 ___________________
 
-input_file_or_folder (str):        Path to the folder containing the Seurat-compatible matrices or path to the hdf5 file. Additionally, saved seurat objects in rds or rdata format can be input here. If a Seurat object is input, the input_seurat_object parameter must be set to True
+| Parameter | Description |
+| --- | --- |
+| input_file_or_folder (str) | Path to the folder containing the Seurat-compatible matrices or path to the hdf5 file. Additionally, saved seurat objects in rds or rdata format can be input here. If a Seurat object is input, the input_seurat_object parameter must be set to True |
+| sample_ID (str) | The name of the sample |
 
-sample_ID (str):                   The name of the sample
-
-
-
-Optional parameters
+#### Optional parameters
 ___________________
 
-output_directory_path (str):        The path to the output directory where all output files and directories will be created and saved
+| Parameter | Description |
+| --- | --- |
+| output_directory_path (str) | The path to the output directory where all output files and directories will be created and saved |
+| generate_seurat_object (bool) | Indicate whether a seurat object should be generated from the input mtx matrix. If a Seurat object is input in the input_file_or_folder parameter, this parameter is required to be set to False. If a gene count matrix is input, this parameters is required to be set to True |
+| subset_seurat_object (bool) | Indicate whether the Seurat object should be subset, removing low-quality cells identified by given thresholds |
+| generate_default_plots (bool) | Indicate whether deafault plots should be generated to visualise the single-cell data and identified low-quality cells |
+| gene_column (int) | The column number in the genes index file that should be used for the row names (gene names) in the Seurat object |
+| input_seurat_object (bool) | Indicate whether the input_file_or_folder parameter contains the path to a saved Seurat object. If so, this parameter should be set to True |
+| transcripts_to_genes_files (str) | Path to the transcripts-to-genes mapping file that will allow ENSG gene names to be converted into corresponding HGNC gene symbols (within the seurat object) if required |
+| gene_lower (int/None) | Minimum number of genes that should be detected in healthy cells. If this cell metric should not be used to identify low-quality cells then gene_lower should be set to None. However, if this parameter is set to None and generate_default_plots is set to True, a warning will be returned as the visualisations that use this threshold cannot be generated |
+| gene_higher_method (str) | One of three methods - "MAD" (Median Absolute Deviation), "SD" (Standard Deviation), or "Manual" - that should be used to identify outliers using total gene count per cell. If Manual is selected, a value must be given for the gene_higher parameter |
+| gene_higher (int/None) | Maximum number of genes that should be detected in single cells. If the gene_higher_method is set to "Manual", a value for gene_higher must be given. If this cell metric should not be used to identify cell doublets then gene_higher should be set to None. However, if this parameter is set to None and generate_default_plots is set to True, a warning will be returned as the visualisations that use this threshold cannot be generated |
+| mitochondria_percent (int/None) | The maximum percentage of mitochondrial genes within a cell. If this cell metric should not be used to identify damaged cells then mitochondria_percent should be set to None. However, if this parameter is set to None and generate_default_plots is set to True, a warning will be returned as the visualisations that use this threshold cannot be generated |
+| nMADs (int) | If the "MAD" method is selected in gene_higher_method, the value given to nMADs is used as the threshold to classify cells as outliers |
+| nSD (int) | If the "SD" method is selected in gene_higher_method, the value given to nSD is used as the threshold to classify cells as outliers |
+| extract_cell_metrics (bool) | Indicate whether to extract the calculated cell metrics as a .tsv file |
+| output_matrix (bool) | Indicate whether to generate an mtx matrix file from the filtered Seurat data. This matrix will contain all healthy single cells characterised by the given thresholds |
 
-generate_seurat_object (bool):      Indicate whether a seurat object should be generated from the input mtx matrix. If a Seurat object is input in the input_file_or_folder parameter, this parameter is required to be set to False. If a gene count matrix is input, this parameters is required to be set to True.
-
-subset_seurat_object (bool):        Indicate whether the Seurat object should be subset, removing low-quality cells identified by given thresholds
-
-generate_default_plots (bool):      Indicate whether deafault plots should be generated to visualise the single-cell data and identified low-quality cells
-
-gene_column (int):                  The column number in the genes index file that should be used for the row names (gene names) in the Seurat object
-
-input_seurat_object (bool):         Indicate whether the input_file_or_folder parameter contains the path to a saved Seurat object. If so, this parameter should be set to True
-
-transcripts_to_genes_files (str):   Path to the transcripts-to-genes mapping file that will allow ENSG gene names to be converted into corresponding HGNC gene symbols (within the seurat object) if required
-
-gene_lower (int/None):              Minimum number of genes that should be detected in healthy cells. If this cell metric should not be used to identify low-quality cells then gene_lower should be set to None. However, if this parameter is set to None and generate_default_plots is set to True, a warning will be returned as the visualisations that use this threshold cannot be generated.
-
-gene_higher_method (str):           One of three methods - "MAD" (Median Absolute Deviation), "SD" (Standard Deviation), or "Manual" - that should be used to identify outliers using total gene count per cell. If Manual is selected, a value must be given for the gene_higher parameter
-
-gene_higher (int/None):             Maximum number of genes that should be detected in single cells. If the gene_higher_method is set to "Manual", a value for gene_higher must be given. If this cell metric should not be used to identify cell doublets then gene_higher should be set to None. However, if this parameter is set to None and generate_default_plots is set to True, a warning will be returned as the visualisations that use this threshold cannot be generated.
-
-mitochondria_percent (int/None):   The maximum percentage of mitochondrial genes within a cell. If this cell metric should not be used to identify damaged cells then mitochondria_percent should be set to None. However, if this parameter is set to None and generate_default_plots is set to True, a warning will be returned as the visualisations that use this threshold cannot be generated
-
-nMADs (int):                       If the "MAD" method is selected in gene_higher_method, the value given to nMADs is used as the threshold to classify cells as outliers
-
-nSD (int):                         if the "SD" method is selected in gene_higher_method, the value given to nSD is used as the threshold to classify cells as outliers
-
-extract_cell_metrics (bool):       Indicate whether to extract the calculated cell metrics as a .tsv file
-
-output_matrix (bool):              Indicate whether to generate an mtx matrix file from the filtered Seurat data. This matrix will contain all healthy single cells characterised by the given thresholds
-
-```` 
 
 ## `stransform_normalize`
 
