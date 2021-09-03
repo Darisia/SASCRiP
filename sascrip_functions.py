@@ -9,7 +9,7 @@ import pkg_resources
 import kb_python
 from kb_python import ref
 from kb_python import count
-import gen_func # The python 'module' I created that contains general functions
+from SASCRiP import gen_func # The python 'module' I created that contains general functions
 import gzip
 
 
