@@ -1,5 +1,5 @@
 # SASCRiP Documentation
-This repository contains all the code and documentation for the SASCRiP Python package
+Sequencing Analysis of Single-Cell RNA in Python (SASCRiP) is a python package with wrapper functions that use the widely used Seurat and BUStools to perform single-cell RNA sequencing data pre-processing and visualisation
 
 ## Table of Contents
 1. [Installation](https://github.com/Darisia/SASCRiP/blob/main/README.md#installation)
@@ -553,7 +553,11 @@ Research areas: Bioinformatics (genetics and immunology) <br>
 
 
 ## Reference
+Bray, N. L., Pimentel, H., Melsted, P., & Pachter, L. (2016). Near-optimal probabilistic RNA-seq quantification. Nature biotechnology, 34(5), 525.
 
+Melsted, P., Booeshaghi, A. S., Liu, L., Gao, F., Lu, L., Min, K. H., da Veiga Beltrame, E., Hjorleifsson, K. E., Gehring, J., & Pachter, L. (2021). Modular and efficient pre-processing of single-cell RNA-seq. Nature Biotechnology.
+
+Stuart, T., Butler, A., Hoffman, P., Hafemeister, C., Papalexi, E., Mauck III, W.M., Hao, Y., Stoeckius, M., Smibert, P. and Satija, R., 2019. Comprehensive integration of single-cell data. Cell, 177(7), pp.1888-1902.
 
 ## Read next
 
