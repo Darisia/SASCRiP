@@ -44,7 +44,7 @@ The SASCRiP package can be installed using pip from the terminal
 
 ```bash
 
-pip install sascrip
+pip install SASCRiP
 
 ```
 
@@ -57,8 +57,8 @@ This function allows the user to install missing R packages that are required fo
 #### Usage
 
 ````python
-import sascrip
-from sascrip import sascrip_functions
+import SASCRiP
+from SASCRiP import sascrip_functions
 
 sascrip_functions.install_R_packages()
 
@@ -71,8 +71,8 @@ sascrip_functions.install_R_packages()
 #### Usage
 
 ````python
-import sascrip
-from sascrip import sascrip_functions
+import SASCRiP
+from SASCRiP import sascrip_functions
 
 sascrip_functions.edit_10xv1_fastq(input_directories)
 
@@ -92,8 +92,8 @@ sascrip_functions.edit_10xv1_fastq(input_directories)
 #### Usage
 
 ````python
-import sascrip
-from sascrip import sascrip_functions
+import SASCRiP
+from SASCRiP import sascrip_functions
 
 sascrip_functions.check_ercc(
      ERCC_fasta,
@@ -178,8 +178,8 @@ Runs both Kallisto and Bustools through kb-python to perform pseudoalignment and
 #### Usage
 
 ````python
-import sascrip
-from sascrip import sascrip_functions
+import SASCRiP
+from SASCRiP import sascrip_functions
 
 sascrip_functions.kallisto_bustools_count(
      list_of_fastqs,
@@ -253,8 +253,8 @@ Please see description above
 #### Usage
 
 ````python
-import sascrip
-from sascrip import sascrip_functions
+import SASCRiP
+from SASCRiP import sascrip_functions
 
 sascrip_functions.include_ERCC_bus_count(
      list_of_fastqs,
@@ -329,8 +329,8 @@ This SASCRiP function is designed to check the input matrix and index files to m
 #### Usage
 
 ````python
-import sascrip
-from sascrip import sascrip_functions
+import SASCRiP
+from SASCRiP import sascrip_functions
 
 sascrip_functions.seurat_matrix(
      matrix_file,
@@ -359,8 +359,8 @@ This is the main cell quality control function. `run_cqc` runs Seurat functions 
 #### Usage
 
 ````python
-import sascrip
-from sascrip import sascrip_functions
+import SASCRiP
+from SASCRiP import sascrip_functions
 
 sascrip_functions.run_cqc(
      input_file_or_folder,
@@ -421,8 +421,8 @@ ___________________
 #### Usage
 
 ````python
-import sascrip
-from sascrip import sascrip_functions
+import SASCRiP
+from SASCRiP import sascrip_functions
 
 sascrip_functions.sctransform_normalize(
      seurat_object,
@@ -459,8 +459,8 @@ ________________________
 
 ```python
 
-import sascrip
-from sascrip import sascrip_functions
+import SASCRiP
+from SASCRiP import sascrip_functions
 
 # Set up the dictionary for the additional parameters
 additional_parameters = {"conserve.memory": True} # Note: If the parameter requires a boolean type, please use Pythons boolean datatype (True/False)
@@ -482,8 +482,8 @@ sascrip_functions.sctransform_normalize(
 #### Usage
 
 ````python
-import sascrip
-from sascrip import sascrip_functions
+import SASCRiP
+from SASCRiP import sascrip_functions
 
 sascrip_functions.sascrip_preprocess(
      output_directory_path,
