@@ -4,6 +4,7 @@
 # required packages
 library(tidyverse)
 library(Seurat)
+library(Matrix)
 
 # Pre-defined R functions
 
@@ -139,11 +140,11 @@ srt_count_mtx <- function(
   print("Converting Seurat Object to an mtx matrix")
   sample_ID_srt <- read_in_seurat_object
   sample_ID_sparse <- as.sparse(GetAssayData(sample_ID_srt, slot = 'counts'))
-  writeMM(sample_ID_sparse, sprintf('%s/%s_normalised_matrix_output/matrix.mtx', output_folder, sample_ID))
+  writeMM(sample_ID_sparse, sprintf('%s/%s_normalised_matrix/matrix.mtx', output_folder, sample_ID))
   sample_ID_sparse_rows <- rownames(sample_ID_sparse)
   sample_ID_sparse_cols <- colnames(sample_ID_sparse)
-  write.table(sample_ID_sparse_rows, file = sprintf('%s/%s_normalised_matrix_output/genes.tsv', output_folder, sample_ID), row.names = FALSE, col.names = FALSE, quote = FALSE)
-  write.table(sample_ID_sparse_cols, file = sprintf('%s/%s_normalised_matrix_output/barcodes.tsv', output_folder, sample_ID), row.names = FALSE, col.names = FALSE, quote = FALSE)
+  write.table(sample_ID_sparse_rows, file = sprintf('%s/%s_normalised_matrix/genes.tsv', output_folder, sample_ID), row.names = FALSE, col.names = FALSE, quote = FALSE)
+  write.table(sample_ID_sparse_cols, file = sprintf('%s/%s_normalised_matrix/barcodes.tsv', output_folder, sample_ID), row.names = FALSE, col.names = FALSE, quote = FALSE)
 }
 
 ######################################################################
@@ -157,11 +158,11 @@ srt_log_mtx <- function(
   print("Converting Seurat Object to an mtx matrix")
   sample_ID_srt <-read_in_seurat_object
   sample_ID_sparse <- as.sparse(GetAssayData(sample_ID_srt, slot = 'data'))
-  writeMM(sample_ID_sparse, sprintf('%s/%s_log_normalised_matrix_output/matrix.mtx', output_folder, sample_ID))
+  writeMM(sample_ID_sparse, sprintf('%s/%s_log_normalised_matrix/matrix.mtx', output_folder, sample_ID))
   sample_ID_sparse_rows <- rownames(sample_ID_sparse)
   sample_ID_sparse_cols <- colnames(sample_ID_sparse)
-  write.table(sample_ID_sparse_rows, file = sprintf('%s/%s_log_normalised_matrix_output/genes.tsv', output_folder, sample_ID), row.names = FALSE, col.names = FALSE, quote = FALSE)
-  write.table(sample_ID_sparse_cols, file = sprintf('%s/%s_log_normalised_matrix_output/barcodes.tsv', output_folder, sample_ID), row.names = FALSE, col.names = FALSE, quote = FALSE)
+  write.table(sample_ID_sparse_rows, file = sprintf('%s/%s_log_normalised_matrix/genes.tsv', output_folder, sample_ID), row.names = FALSE, col.names = FALSE, quote = FALSE)
+  write.table(sample_ID_sparse_cols, file = sprintf('%s/%s_log_normalised_matrix/barcodes.tsv', output_folder, sample_ID), row.names = FALSE, col.names = FALSE, quote = FALSE)
 }
 
 
