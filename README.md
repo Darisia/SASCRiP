@@ -336,7 +336,9 @@ sascrip_functions.seurat_matrix(
      matrix_file,
      gene_index,
      barcode_index,
-     output_directory
+     output_directory,
+     t2g_file = None,
+     add_hgnc = True
 )
 
 ````
@@ -349,6 +351,8 @@ ___________________
 | `gene_index` (str) | Path to the gene index file |
 | `barcode_index` (str) | Path to the barcode index file |
 | `output_directory` (str) | Path to the output directory where the new matrix files will be saved, if new files are generated |
+| `t2g_file` (str) | Path to the transcripts to genes file used for alignment or generated during alignment. To convert ENSG gene names to HGNC gene symbols this parameter is required and the add_hgnc parameter should be set to True |
+| `add_hgnc` (bool) | Indicate whether to convert the ENSG gene names to HGNC gene symbols. If set to True, the t2g_file parameter is required |
 
 
 

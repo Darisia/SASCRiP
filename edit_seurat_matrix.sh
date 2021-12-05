@@ -15,21 +15,36 @@ gene_zipped=$8
 barcode_zipped=$9
 matrix_zipped=${10}
 matrix_srt_format=${11}
+gene_srt_format=${12}
+t2g_file=${13}
 
-# If statement to check if the gene file is named properly
-if [ $gene_zipped == 'True' ]
+# If the gene index file is not in the correct format (gene names) - fix it
+if [ $gene_srt_format == 'False' ]
 then
-  if [ $gene_srt_name == 'False' ]
-  then
-    cp $gene_file $output_directory/features.tsv.gz
-  fi
+    while read -r ENSG
+    do
+      touch $output_directory/features_gene_names.tsv
+      grep -w $ENSG $t2g_file | cut -f 3 | sort -u >> $output_directory/features_gene_names.tsv
+    done < $gene_file
+    # paste the gene file and the corresponding hgnc symbol file together
+    paste $gene_file $output_directory/features_gene_names.tsv > $output_directory/features.tsv
+    gzip $output_directory/features.tsv
 else
-  if [ $gene_srt_name == 'False' ]
+  # If statement to check if the gene file is named properly
+  if [ $gene_zipped == 'True' ]
   then
-    cp $gene_file $output_directory/features.tsv
-    gzip $output_directory/features.tsv
+    if [ $gene_srt_name == 'False' ]
+    then
+      cp $gene_file $output_directory/features.tsv.gz
+    fi
   else
-    gzip $output_directory/features.tsv
+    if [ $gene_srt_name == 'False' ]
+    then
+      cp $gene_file $output_directory/features.tsv
+      gzip $output_directory/features.tsv
+    else
+      gzip $output_directory/features.tsv
+    fi
   fi
 fi
 

@@ -131,7 +131,6 @@ def run_fastqc(fastq_input_list, fastqc_output_list, fastqc_options_list):
             break
         except FileNotFoundError:
             os.mkdir(output_directory)
-    import fastqcfunc
 
     # Combine the input directory list and output directory list into a dictionary
     fastq_input_list.extend(fastqc_output_list)
@@ -144,7 +143,7 @@ def run_fastqc(fastq_input_list, fastqc_output_list, fastqc_options_list):
     for fastq_input, fastqc_output in list_dict.items():
         for file in os.listdir(fastq_input):
             if file.endswith('.fastq.gz'):
-                fastqcfunc.qc(fastq_input + file, fastqc_output, fastqc_options_list)
+                qc(fastq_input + file, fastqc_output, fastqc_options_list)
     # End of function print statement
     print("Done")
 
@@ -382,38 +381,41 @@ def check_ercc(
         )
         # Set list of fastqs as the sorted generated list
         list_of_fastqs = sorted_fastqs_list
-
-    if (UMI_bp is None or barcode_bp is None or transcript_bp is None):
+    
+    # If statement to calculate number of base pairs for UMI and barcode if single-cell technology = 10xv1
+    if single_cell_technology == "10xv1":
+        if (UMI_bp is None or barcode_bp is None or transcript_bp is None):
         # If 10xv1 data - detect number of base pairs for UMI, barcode and transcript sequence
-        base_pairs_transcript = []
-        with gzip.open(list_of_fastqs[0]) as infile:
-            first_four = 4
-            for i in range(first_four):
-                line = infile.readline()
-                base_pairs_transcript.append(line)
+            base_pairs_transcript = []
+            with gzip.open(list_of_fastqs[0]) as infile:
+                first_four = 4
+                for i in range(first_four):
+                    line = infile.readline()
+                    base_pairs_transcript.append(line)
 
-        transcript_bp = len(base_pairs_transcript[1]) - 1
-        transcript_bp = str(transcript_bp)
+            transcript_bp = len(base_pairs_transcript[1]) - 1
+            transcript_bp = str(transcript_bp)
 
-        base_pairs_UMI = []
-        with gzip.open(list_of_fastqs[1]) as infile:
-            first_four = 4
-            for i in range(first_four):
-                line = infile.readline()
-                base_pairs_UMI.append(line)
+            base_pairs_UMI = []
+            with gzip.open(list_of_fastqs[1]) as infile:
+                first_four = 4
+                for i in range(first_four):
+                    line = infile.readline()
+                    base_pairs_UMI.append(line)
 
-        UMI_bp = len(base_pairs_UMI[1]) - 1
-        UMI_bp = str(UMI_bp)
+            UMI_bp = len(base_pairs_UMI[1]) - 1
+            UMI_bp = str(UMI_bp)
 
-        base_pairs_barcode = []
-        with gzip.open(list_of_fastqs[2]) as infile:
-            first_four = 4
-            for i in range(first_four):
-                line = infile.readline()
-                base_pairs_barcode.append(line)
+            base_pairs_barcode = []
+            with gzip.open(list_of_fastqs[2]) as infile:
+                first_four = 4
+                for i in range(first_four):
+                    line = infile.readline()
+                    base_pairs_barcode.append(line)
 
-        barcode_bp = len(base_pairs_barcode[1]) - 1
-        barcode_bp = str(barcode_bp)
+            barcode_bp = len(base_pairs_barcode[1]) - 1
+            barcode_bp = str(barcode_bp)
+
 
     # Create paths for all files and directories generated within this function
     all_ERCC_out_path = os.path.join(output_directory_path, 'ERCC_analysis')
@@ -496,37 +498,39 @@ def kallisto_bustools_count(
         # Set list of fastqs as the sorted generated list
         list_of_fastqs = sorted_fastqs_list
 
-    if (UMI_bp is None or barcode_bp is None or transcript_bp is None):
-        # If 10xv1 data - detect number of base pairs for UMI, barcode and transcript sequence
-        base_pairs_transcript = []
-        with gzip.open(list_of_fastqs[0]) as infile:
-            first_four = 4
-            for i in range(first_four):
-                line = infile.readline()
-                base_pairs_transcript.append(line)
+    # Calculate number of base pairs in the UMI and barcode files for 10xv1 single-cell technology
+    if single_cell_technology == "10xv1":
+        if (UMI_bp is None or barcode_bp is None or transcript_bp is None):
+            # If 10xv1 data - detect number of base pairs for UMI, barcode and transcript sequence
+            base_pairs_transcript = []
+            with gzip.open(list_of_fastqs[0]) as infile:
+                first_four = 4
+                for i in range(first_four):
+                    line = infile.readline()
+                    base_pairs_transcript.append(line)
 
-        transcript_bp = len(base_pairs_transcript[1]) - 1
-        transcript_bp = str(transcript_bp)
+            transcript_bp = len(base_pairs_transcript[1]) - 1
+            transcript_bp = str(transcript_bp)
 
-        base_pairs_UMI = []
-        with gzip.open(list_of_fastqs[1]) as infile:
-            first_four = 4
-            for i in range(first_four):
-                line = infile.readline()
-                base_pairs_UMI.append(line)
+            base_pairs_UMI = []
+            with gzip.open(list_of_fastqs[1]) as infile:
+                first_four = 4
+                for i in range(first_four):
+                    line = infile.readline()
+                    base_pairs_UMI.append(line)
 
-        UMI_bp = len(base_pairs_UMI[1]) - 1
-        UMI_bp = str(UMI_bp)
+            UMI_bp = len(base_pairs_UMI[1]) - 1
+            UMI_bp = str(UMI_bp)
 
-        base_pairs_barcode = []
-        with gzip.open(list_of_fastqs[2]) as infile:
-            first_four = 4
-            for i in range(first_four):
-                line = infile.readline()
-                base_pairs_barcode.append(line)
+            base_pairs_barcode = []
+            with gzip.open(list_of_fastqs[2]) as infile:
+                first_four = 4
+                for i in range(first_four):
+                    line = infile.readline()
+                    base_pairs_barcode.append(line)
 
-        barcode_bp = len(base_pairs_barcode[1]) - 1
-        barcode_bp = str(barcode_bp)
+            barcode_bp = len(base_pairs_barcode[1]) - 1
+            barcode_bp = str(barcode_bp)
 
     # Create paths for all the other files and directories generated within this function
     all_count_out_path = os.path.join(output_directory_path, 'Count_analysis')
@@ -686,9 +690,16 @@ def seurat_matrix(
 matrix_file,
 gene_index,
 barcode_index,
-output_directory
+output_directory,
+t2g_file = None,
+add_hgnc = True
 ):
-
+    # if add_hgnc is True - set gene_srt_format to False
+    if add_hgnc is True:
+        gene_srt_format = False
+    else:
+        gene_srt_format = True
+    
     # Check if the name of the genes file is in the correct format
     srt_gene_index_names = [
     "features.tsv.gz",
@@ -789,7 +800,7 @@ output_directory
     Bash_file = pkg_resources.resource_filename('SASCRiP', 'edit_seurat_matrix.sh')
 
     # Create the bash command to run the bash function that will check and edit the matrix files
-    command = "sh {} {} {} {} {} {} {} {} {} {} {} {}".format(
+    command = "bash {} {} {} {} {} {} {} {} {} {} {} {}".format(
         Bash_file,
         matrix_file,
         gene_index,
@@ -801,7 +812,9 @@ output_directory
         check_zipped_dict[gene_index],
         check_zipped_dict[barcode_index],
         check_zipped_dict[matrix_file],
-        matrix_srt_format)
+        matrix_srt_format,
+        gene_srt_format,
+        t2g_file)
 
     # Run the bash command using subprocess.run and save the standard output to check_process
     check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
