@@ -437,7 +437,7 @@ def check_ercc(
     bustools_text(output_ERCC_busfile, ERCC_busfile_to_text)
 
     # Count the number of lines in the ERCC busfile
-    busfile_lines = count_lines(ERCC_busfile_to_text)
+    busfile_lines = gen_func.count_lines(ERCC_busfile_to_text)
 
     if busfile_lines >= 2:
         ERCC_included = True
