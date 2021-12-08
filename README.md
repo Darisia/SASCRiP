@@ -553,7 +553,7 @@ Research areas: Bioinformatics (genetics and immunology) <br>
 
 ## License
 
-[GNU GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
+[GNU GPLv3](https://opensource.org/licenses/AGPL-3.0)
 
 
 ## Reference
