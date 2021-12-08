@@ -800,7 +800,7 @@ add_hgnc = True
     Bash_file = pkg_resources.resource_filename('SASCRiP', 'edit_seurat_matrix.sh')
 
     # Create the bash command to run the bash function that will check and edit the matrix files
-    command = "bash {} {} {} {} {} {} {} {} {} {} {} {}".format(
+    command = "bash {} {} {} {} {} {} {} {} {} {} {} {} {} {}".format(
         Bash_file,
         matrix_file,
         gene_index,
