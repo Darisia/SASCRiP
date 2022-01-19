@@ -567,17 +567,7 @@ def kallisto_bustools_count(
 
     # Run bustools_sort and copy_or_create_whitelist from the kb-python package
     count.bustools_sort(output_busfile, sorted_busfile, threads=8, memory=memory)
-    count.copy_or_create_whitelist(single_cell_technology, sorted_busfile, all_count_out_path)
-
-    # Set the whitelist path for the different single-cell technologies
-    if single_cell_technology=='10xv1' or \
-    single_cell_technology=='10xv2' or \
-    single_cell_technology=='10xv3':
-        whitelist_path = all_count_out_path + '/' + single_cell_technology + '_whitelist.txt'
-    elif single_cell_technology=='inDrops':
-        whitelist_path = all_count_out_path + '/' + single_cell_technology + 'v3_whitelist.txt'
-    else:
-        whitelist_path = all_count_out_path + '/whitelist.txt'
+    whitelist_path = count.copy_or_create_whitelist(single_cell_technology, sorted_busfile, all_count_out_path)
 
     # Run functions from the kb-python package
     count.bustools_inspect(sorted_busfile, inspect_json_file, whitelist_path, ecmap)
@@ -1196,9 +1186,6 @@ def sascrip_preprocess(
     additional_sctransform_arguments = None # Dictionary - use as indicated in documentaion
     ):
 
-    # Import the required packages
-    import sascrip_functions
-
     # Check if statements should be printed to std output
     if include_checkpoints is True:
         logger.addHandler(stream_handler)
@@ -1207,7 +1194,7 @@ def sascrip_preprocess(
     # Step one: Run kallisto_bustools_count to generate the unfiltered and filtered gene count matrix
 
     if kallisto_bustools_count_parameters is None:
-        gen_files = sascrip_functions.kallisto_bustools_count(
+        gen_files = kallisto_bustools_count(
             list_of_fastqs = list_of_fastqs,
             single_cell_technology = single_cell_technology,
             output_directory_path = output_directory_path,
@@ -1218,7 +1205,7 @@ def sascrip_preprocess(
             filter = filter
             )
     else:
-        gen_files = sascrip_functions.kallisto_bustools_count(
+        gen_files = kallisto_bustools_count(
             list_of_fastqs = list_of_fastqs,
             single_cell_technology = single_cell_technology,
             output_directory_path = output_directory_path,
@@ -1244,18 +1231,20 @@ def sascrip_preprocess(
     species_t2g = gen_files["transcript_to_genes"]
 
     if filter is True:
-        sascrip_functions.seurat_matrix(
+        seurat_matrix(
             filtered_mtx_matrix,
             filtered_genes,
             filtered_barcodes,
-            filtered_path
+            filtered_path,
+            t2g_file = species_t2g
         )
     else:
-        sascrip_functions.seurat_matrix(
+        seurat_matrix(
             unfiltered_mtx_matrix,
             unfiltered_genes,
             unfiltered_barcodes,
-            unfiltered_path
+            unfiltered_path,
+            t2g_file = species_t2g
         )
 
     # Step three is to input the generated and edited count matrix into Seurat to generate a seurat object and subset it based
@@ -1276,7 +1265,8 @@ def sascrip_preprocess(
         input_file_or_folder = input_files,
         sample_ID = sample_ID,
         output_directory_path = cell_quality_control_folder,
-        transcripts_to_genes_file = species_t2g
+        transcripts_to_genes_file = species_t2g,
+        gene_column = 2
         )
     else:
         run_cqc(
@@ -1284,6 +1274,7 @@ def sascrip_preprocess(
         sample_ID = sample_ID,
         output_directory_path = cell_quality_control_folder,
         transcripts_to_genes_file = species_t2g,
+        gene_column = 2,
         **run_cqc_parameters
         )
 

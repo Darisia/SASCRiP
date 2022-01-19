@@ -251,6 +251,8 @@ if ( is_add_args == TRUE ) {
 } else {
 	sample_ID_srt <- SCTransform(sample_ID_srt)
 }
+# Find Variable features using the standardized variance method
+sample_ID_srt <- FindVariableFeatures(sample_ID_srt, assay = "SCT")
 
 # Save the normalised Seurat object to rds file
 saveRDS(

@@ -320,10 +320,10 @@ damaged_scatter <- function(
                                                    y = UMI_count)) +
   geom_point(aes(colour = ifelse(gene_count <= gene_lower, "Remove", "Keep" ))) +
   scale_colour_manual(values = c("blue", "red"),
-                      labels = c("Healthy", "Low-quality"))
+                      labels = c("High quality cells", "Low quality cells"))
 
   sample_ID_preQC_scat <- sample_ID_preQC_scat +
-    labs(x = "Total number of unique genes",
+    labs(x = "Total number of unique genes detected",
        y = "Total number of UMIs detected",
        colour = "") +
     theme(axis.title.x = element_text(margin = margin(b = 1, unit = 'cm'),
@@ -361,8 +361,8 @@ damaged_scatter <- function(
                y = mito_percent,
                colour = mito_filt)) +
    geom_point() +
-   scale_colour_manual(values = c("blue", "#ff7f00"),
-                        labels = c("Healthy", "Low-quality")) +
+   scale_colour_manual(values = c("blue", "red"),
+                        labels = c("High quality cells", "Low quality cells")) +
   labs(x = "Total number of unique genes detected",
        y = "Percentage of mitochondrial genes detected",
        colour = "") +
