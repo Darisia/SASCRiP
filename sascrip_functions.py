@@ -201,11 +201,12 @@ def edit_10xv1_fastq(
 
 
     # Combine the input directory list and output directory list into a dictionary
-    input_directories.extend(output_directories)
+    # Combine the input directory list and output directory list into a dictionary
+    both_directories = input_directories + output_directories
     for i in range(0, len(output_directories), 1):
         x = i + len(output_directories)
-        if x < len(input_directories):
-            list_dict = {input_directories[i] : input_directories[i + len(output_directories)] for i in range(0, len(output_directories), 1)}
+        if x < len(both_directories):
+            list_dict = {both_directories[i] : both_directories[i + len(output_directories)] for i in range(0, len(output_directories), 1)}
 
 
     for fastq_input, fastq_output in list_dict.items():
