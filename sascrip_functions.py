@@ -258,16 +258,32 @@ def bustools_text(bus_path, out_path):
 
 
 # Converts barcode, UMI, and transcript length into the bc:umi:seq kallisto bus format
-def convert_bc_umi_seq(barcode_bp, umi_bp, transcript_bp):
+def convert_bc_umi_seq(
+barcode_bp, # must be strings
+umi_bp,
+transcript_bp,
+single_cell_technology,
+barcode_file = "1", # must be a string and remember it's zero based
+umi_file = "1", # zero based
+transcript_file = "2", # zero based
+):
     logger.info('Converting single-cell technology into bc:umi:seq format')
-    barcode_bp = '14'
-    tenxv1_tech_edit = '2,0,' + barcode_bp + ':1,0,' + umi_bp + ':0,0,' + transcript_bp
-    return tenxv1_tech_edit
+    #barcode_bp = '14'
+    if single_cell_technology == "10xv1":
+        tech_edit = '2,0,' + barcode_bp + ':1,0,' + umi_bp + ':0,0,' + transcript_bp
+    else:
+        if barcode_file == umi_file:
+            barcode_n = int(barcode_bp)
+            umi_n = int(umi_bp)
+            umi_end = barcode_n + umi_n
+            umi_end = str(umi_end)
+            tech_edit = barcode_file + ',0,' + barcode_bp + ':' + umi_file + ',' + barcode_bp + ',' + umi_end + ':' + transcript_file + ',0,' + transcript_bp
+    return tech_edit
 
 # Defines the function to filter a busfile using the barcodes and then generating the filtered count matrix
 def filter_busfile(sorted_corrected_busfile, species_t2g, ecmap_path, transcripts_path, output, memory):
 
-    logger.info('Filtering BUS file')
+    #logger.info('Filtering BUS file') # Don't need the logging stuff here
 
     # Set paths for all files and folders used and generated within this function
     generated_whitelist = os.path.join(output, 'generated_whitelist.txt')
@@ -397,7 +413,7 @@ def check_ercc(
         )
         # Set list of fastqs as the sorted generated list
         list_of_fastqs = sorted_fastqs_list
-    
+
     # If statement to calculate number of base pairs for UMI and barcode if single-cell technology = 10xv1
     if single_cell_technology == "10xv1":
         if (UMI_bp is None or barcode_bp is None or transcript_bp is None):
@@ -477,8 +493,11 @@ def kallisto_bustools_count(
                         intron = False,
                         filter=True,
                         UMI_bp=None,
+                        UMI_file = None,
                         barcode_bp=None,
+                        barcode_file = None,
                         transcript_bp=None,
+                        transcript_file = None,
                         whitelist_path='None',
                         path_to_prefix_count_files='unfiltered_counts',
                         memory = '4G'
@@ -560,15 +579,33 @@ def kallisto_bustools_count(
     transcripts = os.path.join(all_count_out_path, 'transcripts.txt')
 
     # Generate BUSfiles - taking into consideration the technology
-    if single_cell_technology=='10xv1':
-        converted_tech = convert_bc_umi_seq(barcode_bp, UMI_bp, transcript_bp)
+    if single_cell_technology=='10xv1' or single_cell_technology == "unsupported":
+        converted_tech = convert_bc_umi_seq(
+        barcode_bp,
+        UMI_bp,
+        transcript_bp,
+        single_cell_technology,
+        barcode_file,
+        UMI_file,
+        transcript_file
+        )
         count.kallisto_bus(list_of_fastqs, species_index, converted_tech, all_count_out_path, threads=8)
     else:
         count.kallisto_bus(list_of_fastqs, species_index, single_cell_technology, all_count_out_path, threads=8)
 
     # Run bustools_sort and copy_or_create_whitelist from the kb-python package
     count.bustools_sort(output_busfile, sorted_busfile, threads=8, memory=memory)
-    whitelist_path = count.copy_or_create_whitelist(single_cell_technology, sorted_busfile, all_count_out_path)
+    if single_cell_technology == "unsupported":
+        whitelist_path = os.path.join(
+            all_count_out_path,
+            "whitelist"
+        )
+        whitelist_name = count.bustools_whitelist(
+            sorted_busfile,
+            whitelist_path
+        )
+    else:
+        whitelist_path = count.copy_or_create_whitelist(single_cell_technology, sorted_busfile, all_count_out_path)
 
     # Run functions from the kb-python package
     count.bustools_inspect(sorted_busfile, inspect_json_file, whitelist_path, ecmap)
@@ -582,7 +619,72 @@ def kallisto_bustools_count(
     # Run filter_busfile if specified
     if filter==True:
         filter_busfile(sorted_corrected_busfile, species_t2g, ecmap, transcripts, all_count_out_path, memory=memory)
-
+    # Create a table containing the mapping information
+    # First the relevant modules and packages need to be imported
+    import json
+    import pandas
+    # Create the paths to the json files we want to read in
+    # The run info json file
+    RunInfoJsonPath = os.path.join(
+        output_directory_path,
+        "Count_analysis/run_info.json"
+    )
+    # The inspect jason file
+    InspectInfoJsonPath = os.path.join(
+        output_directory_path,
+        "Count_analysis/inspect.json"
+    )
+    # Use open to open to the json files
+    RunInfoOpen = open(
+        RunInfoJsonPath
+    )
+    InspectInfoOpen = open(
+        InspectInfoJsonPath
+    )
+    # Use json.load to extract the information from the file
+    RunInfoExtracted = json.load(
+        RunInfoOpen
+    )
+    InspectInfoExtracted = json.load(
+        InspectInfoOpen
+    )
+    # Subset the dictionaries to only the information we want
+    RunInfoSubset = dict(
+        (k, RunInfoExtracted[k]) for k in (
+            'n_processed',
+            'p_pseudoaligned',
+            'kallisto_version',
+            'start_time'
+        )
+    )
+    InspectInfoSubset = dict(
+        (k, InspectInfoExtracted[k]) for k in (
+            'numRecords',
+            'percentageReadsOnWhitelist'
+        )
+    )
+    # Create function to merge two dictionaries
+    def Merge(dict1, dict2):
+        res = {**dict1, **dict2}
+        return res
+    # Use that merge function to combine the two subset dictionaries
+    AllInfoSubsetDict = Merge(
+        RunInfoSubset,
+        InspectInfoSubset
+    )
+    # Add that Dictionary as an element in the list - should only be one element in the list
+    AllInfoSubsetList = [
+        AllInfoSubsetDict
+    ]
+    # Now create a pandas dataframe
+    AllInfoDfFromDictList = pandas.DataFrame.from_dict(AllInfoSubsetList)
+    # Export that dataframe as a csv
+    # First create the path name
+    Df_output_path = os.path.join(
+        output_directory_path,
+        "RunAndInspectInfo.csv"
+    )
+    AllInfoDfFromDictList.to_csv(Df_output_path)
     # Return a dictionary containing generated files from this function
     gen_files = {
     "transcript_to_genes": species_t2g,
@@ -590,6 +692,86 @@ def kallisto_bustools_count(
     }
 
     return(gen_files)
+
+# # Defines the function to run kallisto_bustools_count on multiple samples at once
+def multi_kallisto_bustools_count(
+    list_of_fastqs,
+    single_cell_technology,
+    output_directory_paths,
+    species_index,
+    species_t2g,
+    main_output_directory,
+    input_directories = False,
+    read_separators = None,
+    generate_index = False,
+    species_fasta = None,
+    species_gtf = None,
+    k_mer_length = 31,
+    intron = False,
+    filter = True,
+    UMI_bp = None,
+    UMI_file = None,
+    barcode_bp = None,
+    barcode_file = None,
+    transcript_bp = None,
+    transcript_file = None,
+    whitelist_path = 'None',
+    path_to_prefix_count_files = 'unfiltered_counts',
+    memory = '4G'
+):
+    # Check if the read structure variable was input - if so check if it is a nested list or not
+    if read_separators != None:
+        is_nested = any(isinstance(list_i, list) for list_i in read_separators)
+        if is_nested == False:
+            read_separators = [read_separators] # Basically makes it a nested list
+    else:
+        read_separators = [None] # Put the word None into a list so it can be interpreted properly
+    # For loop to run the function
+    for i in range(0, len(output_directory_paths)):
+        sascrip_functions.kallisto_bustools_count(
+            list_of_fastqs = input_fastqs[i], # Does this properly pull out the list within the nested list
+            single_cell_technology = single_cell_technology[i] if isinstance(single_cell_technology, list) == True else single_cell_technology,
+            output_directory_path = output_directory_paths[i],
+            species_index = species_index,
+            species_t2g = species_t2g,
+            input_directory = input_directories[i] if isinstance(input_directories, list) == True input_directories,
+            read_separator = read_separators[i] if len(read_separators) > 1 else read_separators[0],
+            generate_index = generate_index, # Needs to be False because otherwise it will generate the index for every single sample
+            species_fasta - species_fasta,
+            species_gtf = species_gtf,
+            k_mer_length = k_mer_length,
+            intron = intron,
+            filter = filter,
+            UMI_bp = UMI_bp[i] if length(UMI_bp) > 1 else UMI_bp, # Most of the time it will most likely be None
+            UMI_file = UMI_file[i] if length(UMI_file) > 1 else UMI_file,
+            barcode_bp = barcode_bp[i] if length(barcode_bp) > 1 else barcode_bp,
+            barcode_file = barcode_file[i] if len(barcode_file) > 1 else barcode_file,
+            transcript_bp = transcript_bp[i] if len(transcript_bp) > 1 else transcript_bp,
+            transcript_file = transcript_file[i] if len(transcript_file) > 1 else transcript_file,
+            whitelist_path = whitelist_path[i] if len(whitelist_path) > 1 else whitelist_path,
+            path_to_prefix_count_files = 'unfiltered_counts',
+            memory = '4G'
+        )
+    # Read in all of the RunAndInspectInfo Dfs and combine them into one for all samples (need pandas)
+    # Can we store Dfs in a list in python?
+    RunAndInspectInfoAllSamples = []
+    for i in range(0, len(output_directory_paths)):
+        SampleDfPath = os.path.join(
+            output_directory_paths[i],
+            "RunAndInspectInfo.csv"
+        )
+        SampleDf = pandas.read_csv(SampleDfPath)
+        SampleDIct = SampleDf.to_dict()
+        RunAndInspectInfoAllSamples.append(SampleDf)
+    # Concatenate the dataframes in the RunAndInspectInfoAllSamples List
+    RunAndInspectInfoAllSamplesDf = pandas.concat(RunAndInspectInfoAllSamples)
+    # Now we save that Df in the output directory (note: There are no sample names here)
+    # Path to the saved Df
+    RunAndInspectInfoAllSamplesPath = os.path.join(
+        main_output_directory,
+        "RunAndInspectInfoAllSamples.csv"
+    )
+    RunAndInspectInfoAllSamplesDf.to_csv(RunAndInspectInfoAllSamplesPath)
 
 # Defines the function to check first if ERCCs are included within the dataset and proceeds accordingly
 def include_ERCC_bus_count(
@@ -705,7 +887,7 @@ add_hgnc = True
         gene_srt_format = False
     else:
         gene_srt_format = True
-    
+
     # Check if the name of the genes file is in the correct format
     srt_gene_index_names = [
     "features.tsv.gz",
@@ -831,6 +1013,25 @@ add_hgnc = True
 
 
 ####################################################################################################################
+
+# Defines the function that will run seurat_matrix on multiple samples
+def multi_seurat_matrix(
+    matrix_files,
+    gene_indices,
+    barcode_indices,
+    output_directories,
+    t2g_file = None,
+    add_hgnc = True
+):
+    for i in range(0, len(output_folders)):
+    sascrip_functions.seurat_matrix(
+        matrix_file = matrix_files[i],
+        gene_index = gene_indices[i],
+        barcode_index = barcode_indices[i],
+        output_directory = output_directories[i],
+        t2g_file = t2g_file,
+        add_hgnc = add_hgnc[i] if isinstance(add_hgnc, list) == True else add_hgnc
+    )
 
 #######################################################################################################
 # All functions for CellQC preprocessing steps and the generating of graphs - still needs more editing
@@ -1010,6 +1211,62 @@ def run_cqc(input_file_or_folder,
 
 #########################################################################################################
 
+# Defines the function that will run run_cqc on multiple samples simultaneously as well as produce a combined QC visualisation
+def multi_run_cqc(
+    input_files_or_folders,
+    all_sample_IDs,
+    output_directory_paths,
+    main_output_directory,
+    output_prefix,
+    generate_seurat_object = True,
+    subset_seurat_object = True,
+    generate_default_plots = True,
+    gene_column = 1,
+    input_seurat_object = False,
+    transcripts_to_genes_file = None,
+    gene_lower = 200,
+    gene_higer_method = "MAD",
+    gene_higher = "to_be_calculated",
+    mitochondria_percent = 10,
+    nMADs = 6,
+    nSD = 6,
+    extract_cell_metrics = False,
+    output_matrix = False
+):
+    for i in range(0, len(all_sample_IDs)):
+        sascrip_functions.run_cqc(
+            input_file_or_folder = input_files_or_folders[i],
+            sample_ID = all_sample_IDs[i],
+            output_directory_path = output_directory_paths[i] if isinstance(output_directory_paths, list) == True else output_directory_paths,
+            generate_seurat_object = generate_seurat_object[i] if isinstance(generate_seurat_object, list) == True else generate_seurat_object,
+            subset_seurat_object = subset_seurat_object[i] if isinstance(subset_seurat_object, list) == True else subset_seurat_object,
+            generate_default_plots = generate_default_plots[i] if isinstance(generate_default_plots, list) == True else generate_default_plots,
+            gene_column = gene_column[i] if isinstance(gene_column, list) == True else gene_column,
+            input_seurat_object = input_seurat_object[i] if isinstance(input_seurat_object, list) == True else input_seurat_object,
+            transcripts_to_genes_file = transcripts_to_genes_file, # Will be constant for all
+            gene_lower = gene_lower[i] if isinstance(gene_lower, list) == True else gene_lower,
+            gene_higher_method = gene_higher_method[i] if isinstance(gene_higher_method, list) == True else gene_higher_method,
+            gene_higher = gene_higher[i] if isinstance(gene_higher, list) == True else gene_higher,
+            mitochondria_percent = mitochondria_percent[i] if isinstance(mitochondria_percent, list) == True else mitochondria_percent,
+            nMADs = nMADs[i] if isinstance(nMADs, list) == True else nMADs,
+            nSD = nSD[i] if isinstance(nSD, list) == True else nSD,
+            extract_cell_metrics = extract_cell_metrics[i] if isinstance(extract_cell_metrics, list) == True else extract_cell_metrics,
+            output_matrix = output_matrix[i] if isinstance(output_matrix, list) == True else output_matrix
+        )
+
+    # Within the same main function - we need to and run additional code to generate the cell quality control combined figure
+    all_input_directories_str = ",".join(all_input_directories)
+    all_sample_IDs_str = ",".join(all_sample_IDs)
+    R_file = pkg_resources.resource_filname('SASCRiP', 'MultipleSample_cqc_vis.R')
+    command = 'Rscript {} {} {} {} {}'.format(
+        R_file,
+        all_input_directories_str,
+        all_sample_IDs_str,
+        main_output_directory,
+        output_prefix
+    )
+    check_command = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+
 ##################################################################################################
 # All functions to run the normalisation preprocessing steps on the filtered single-cell UMI data
 ##################################################################################################
@@ -1164,6 +1421,25 @@ def sctransform_normalize(
         print(check_process.stderr)
 
 ####################################################################################################
+
+# Defines the function that runs sctransform_noramlize on multiple samples simultaneously
+def multi_sctransform_normalize(
+    seurat_objects,
+    all_sample_IDs,
+    output_directory_paths,
+    output_log_matrix = False,
+    output_count_matrix = False,
+    transcripts_to_genes_file = None
+):
+    for i in range(0, len(all_sample_IDs)):
+        sascrip_functions.sctransform_normalize(
+            seurat_object = seurat_objects[i],
+            sample_ID = all_sample_IDs[i],
+            output_directory = output_directory_paths[i] if isinstance(output_directory_paths, list) == True else output_directory_paths,
+            output_log_matrix = output_log_matrix[i] if isinstance(output_log_matrix, list) == True else output_log_matrix,
+            output_count_matrix = output_count_matrix[i] if isinstance(output_count_matrix, list) == True else output_count_matrix,
+            transcripts_to_genes_file = transcripts_to_genes_file
+        )
 
 ####################################################################################################
 # Function to run sascrips preprocessing steps in one go

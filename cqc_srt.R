@@ -753,6 +753,31 @@ sub_srt <- function(
   saveRDS(sample_ID_srt,
           file = sprintf('%s/%s_subset_seurat.rds', output_folder, sample_ID))
 
+  # Create a dataframe with the cell count information
+  CellCountDf <- data.frame(
+          "Sample" = sample_ID,
+          "Starting" = starting_cells,
+          "BelowGeneCount" = number_cells_below_threshold,
+          "AboveMt" = number_cells_above_threshold,
+          "UpperOutlier" = number_cells_above_outlier_threshold,
+          "CellsLeft" = cells_remaining
+  )
+  # Use mutate to claculate the proportion of cells left
+  CellCountDf <- mutate(
+          CellCountDf,
+          PropCellsLeft = (CellsLeft/Starting)*100
+  )
+  # Create an output path for this dataframe
+  DfFilename <- sprintf(
+          "%s/%s_CellCountInfo.csv",
+          output_folder,
+          sample_ID
+  )
+  # Save the dataframe in a tabular format (.csv)
+  write_csv(
+          x = CellCountDf,
+          file = DfFilename
+  )
   # Save the counts in the subset seurat object as an mtx count matrix if output_matrix == TRUE
   if (output_matrix == TRUE) {
     srt_to_mtx(sample_ID_srt, sample_ID, output_folder)
