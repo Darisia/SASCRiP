@@ -265,7 +265,7 @@ transcript_bp,
 single_cell_technology,
 barcode_file = "1", # must be a string and remember it's zero based
 umi_file = "1", # zero based
-transcript_file = "2", # zero based
+transcript_file = "2" # zero based
 ):
     logger.info('Converting single-cell technology into bc:umi:seq format')
     #barcode_bp = '14'
@@ -684,7 +684,7 @@ def kallisto_bustools_count(
         output_directory_path,
         "RunAndInspectInfo.csv"
     )
-    AllInfoDfFromDictList.to_csv(Df_output_path)
+    AllInfoDfFromDictList.to_csv(Df_output_path, index=False)
     # Return a dictionary containing generated files from this function
     gen_files = {
     "transcript_to_genes": species_t2g,
@@ -729,26 +729,26 @@ def multi_kallisto_bustools_count(
     # For loop to run the function
     for i in range(0, len(output_directory_paths)):
         sascrip_functions.kallisto_bustools_count(
-            list_of_fastqs = input_fastqs[i], # Does this properly pull out the list within the nested list
+            list_of_fastqs = list_of_fastqs[i], # Does this properly pull out the list within the nested list
             single_cell_technology = single_cell_technology[i] if isinstance(single_cell_technology, list) == True else single_cell_technology,
             output_directory_path = output_directory_paths[i],
             species_index = species_index,
             species_t2g = species_t2g,
-            input_directory = input_directories[i] if isinstance(input_directories, list) == True input_directories,
+            input_directory = input_directories[i] if isinstance(input_directories, list) == True else input_directories,
             read_separator = read_separators[i] if len(read_separators) > 1 else read_separators[0],
             generate_index = generate_index, # Needs to be False because otherwise it will generate the index for every single sample
-            species_fasta - species_fasta,
+            species_fasta = species_fasta,
             species_gtf = species_gtf,
             k_mer_length = k_mer_length,
             intron = intron,
             filter = filter,
-            UMI_bp = UMI_bp[i] if length(UMI_bp) > 1 else UMI_bp, # Most of the time it will most likely be None
-            UMI_file = UMI_file[i] if length(UMI_file) > 1 else UMI_file,
-            barcode_bp = barcode_bp[i] if length(barcode_bp) > 1 else barcode_bp,
-            barcode_file = barcode_file[i] if len(barcode_file) > 1 else barcode_file,
-            transcript_bp = transcript_bp[i] if len(transcript_bp) > 1 else transcript_bp,
-            transcript_file = transcript_file[i] if len(transcript_file) > 1 else transcript_file,
-            whitelist_path = whitelist_path[i] if len(whitelist_path) > 1 else whitelist_path,
+            UMI_bp = UMI_bp[i] if isinstance(UMI_bp, list) == True else UMI_bp, # Most of the time it will most likely be None
+            UMI_file = UMI_file[i] if isinstance(UMI_file, list) == True else UMI_file,
+            barcode_bp = barcode_bp[i] if isinstance(barcode_bp, list) == True else barcode_bp,
+            barcode_file = barcode_file[i] if isinstance(barcode_file, list) == True else barcode_file,
+            transcript_bp = transcript_bp[i] if isinstance(transcript_bp, list) == True else transcript_bp,
+            transcript_file = transcript_file[i] if isinstance(transcript_file, list) == True else transcript_file,
+            whitelist_path = whitelist_path[i] if isinstance(whitelist_path, list) == True else whitelist_path,
             path_to_prefix_count_files = 'unfiltered_counts',
             memory = '4G'
         )
@@ -875,12 +875,12 @@ def include_ERCC_bus_count(
 #######################################################################################################
 # Define the function that will check the matrix
 def seurat_matrix(
-matrix_file,
-gene_index,
-barcode_index,
-output_directory,
-t2g_file = None,
-add_hgnc = True
+    matrix_file,
+    gene_index,
+    barcode_index,
+    output_directory,
+    t2g_file = None,
+    add_hgnc = True
 ):
     # if add_hgnc is True - set gene_srt_format to False
     if add_hgnc is True:
@@ -1023,15 +1023,15 @@ def multi_seurat_matrix(
     t2g_file = None,
     add_hgnc = True
 ):
-    for i in range(0, len(output_folders)):
-    sascrip_functions.seurat_matrix(
-        matrix_file = matrix_files[i],
-        gene_index = gene_indices[i],
-        barcode_index = barcode_indices[i],
-        output_directory = output_directories[i],
-        t2g_file = t2g_file,
-        add_hgnc = add_hgnc[i] if isinstance(add_hgnc, list) == True else add_hgnc
-    )
+    for i in range(0, len(output_directories)):
+        sascrip_functions.seurat_matrix(
+            matrix_file = matrix_files[i],
+            gene_index = gene_indices[i],
+            barcode_index = barcode_indices[i],
+            output_directory = output_directories[i],
+            t2g_file = t2g_file,
+            add_hgnc = add_hgnc[i] if isinstance(add_hgnc, list) == True else add_hgnc
+        )
 
 #######################################################################################################
 # All functions for CellQC preprocessing steps and the generating of graphs - still needs more editing
@@ -1225,7 +1225,7 @@ def multi_run_cqc(
     input_seurat_object = False,
     transcripts_to_genes_file = None,
     gene_lower = 200,
-    gene_higer_method = "MAD",
+    gene_higher_method = "MAD",
     gene_higher = "to_be_calculated",
     mitochondria_percent = 10,
     nMADs = 6,
@@ -1255,9 +1255,9 @@ def multi_run_cqc(
         )
 
     # Within the same main function - we need to and run additional code to generate the cell quality control combined figure
-    all_input_directories_str = ",".join(all_input_directories)
+    all_input_directories_str = ",".join(output_directory_paths) if isinstance(output_directory_paths, list) == True else output_directory_paths
     all_sample_IDs_str = ",".join(all_sample_IDs)
-    R_file = pkg_resources.resource_filname('SASCRiP', 'MultipleSample_cqc_vis.R')
+    R_file = pkg_resources.resource_filename('SASCRiP', 'MultipleSample_cqc_vis.R')
     command = 'Rscript {} {} {} {} {}'.format(
         R_file,
         all_input_directories_str,
