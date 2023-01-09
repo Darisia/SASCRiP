@@ -26,6 +26,7 @@ from kb_python import ref
 from kb_python import count
 from SASCRiP import gen_func # The python 'module' I created that contains general functions
 import gzip
+from SASCRiP import sascrip_functions
 
 
 #########################################################################################
