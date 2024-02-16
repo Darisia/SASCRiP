@@ -109,7 +109,7 @@ out_detect <- function(
   sample_ID_srt <- seurat_object
   # Remove poor quality cells and save the remaining information in a dataframe
   sample_ID_mtdata <- sample_ID_srt@meta.data
-  sample_ID_mtdata <- filter(sample_ID_mtdata, nFeature_RNA > as.numeric(gene_lower) | mito.percent < as.numeric(mitochondria_percent))
+  sample_ID_mtdata <- filter(sample_ID_mtdata, nFeature_RNA > as.numeric(gene_lower) & mito.percent < as.numeric(mitochondria_percent))
   # Calculate outlier cut off based on outlier_method
   if (outlier_method == "MAD") {
     mad_value <- mad(sample_ID_mtdata$nFeature_RNA)

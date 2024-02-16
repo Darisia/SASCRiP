@@ -985,11 +985,13 @@ def seurat_matrix(
     # Sort out the output directory
     gen_func.mkdirs(output_directory)
 
-    # Path to the required R script
+    # Path to the required bash file
     Bash_file = pkg_resources.resource_filename('SASCRiP', 'edit_seurat_matrix.sh')
+    # Path to the required R script
+    Rscript_file = pkg_resources.resource_filename('SASCRiP', 'AddHGNC_features.R')
 
     # Create the bash command to run the bash function that will check and edit the matrix files
-    command = "bash {} {} {} {} {} {} {} {} {} {} {} {} {} {}".format(
+    command = "bash {} {} {} {} {} {} {} {} {} {} {} {} {} {} {}".format(
         Bash_file,
         matrix_file,
         gene_index,
@@ -1003,7 +1005,8 @@ def seurat_matrix(
         check_zipped_dict[matrix_file],
         matrix_srt_format,
         gene_srt_format,
-        t2g_file)
+        t2g_file,
+        Rscript_file)
 
     # Run the bash command using subprocess.run and save the standard output to check_process
     check_process = subprocess.run(command, shell = True, stdout = subprocess.PIPE, stderr = subprocess.PIPE)

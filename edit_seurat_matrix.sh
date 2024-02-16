@@ -17,17 +17,12 @@ matrix_zipped=${10}
 matrix_srt_format=${11}
 gene_srt_format=${12}
 t2g_file=${13}
+RscriptPath=${14}
 
 # If the gene index file is not in the correct format (gene names) - fix it
 if [ $gene_srt_format == 'False' ]
 then
-    while read -r ENSG
-    do
-      touch $output_directory/features_gene_names.tsv
-      grep -w $ENSG $t2g_file | cut -f 3 | sort -u >> $output_directory/features_gene_names.tsv
-    done < $gene_file
-    # paste the gene file and the corresponding hgnc symbol file together
-    paste $gene_file $output_directory/features_gene_names.tsv > $output_directory/features.tsv
+    Rscript $RscriptPath $gene_file $t2g_file $output_directory $output_directory
     gzip $output_directory/features.tsv
 else
   # If statement to check if the gene file is named properly
